@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.eva.check.mapper.CheckSentenceMapper">
+
+    <resultMap id="BaseResultMap" type="com.eva.check.pojo.CheckSentence">
+        <id property="sentenceId" column="sentence_id" jdbcType="BIGINT"/>
+        <result property="sentenceNum" column="sentence_num" jdbcType="INTEGER"/>
+        <result property="paragraphId" column="paragraph_id" jdbcType="BIGINT"/>
+        <result property="originContent" column="origin_content" jdbcType="VARCHAR"/>
+        <result property="content" column="content" jdbcType="VARCHAR"/>
+        <result property="similarity" column="similarity" jdbcType="DOUBLE"/>
+        <result property="status" column="status" jdbcType="CHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        sentence_id,sentence_num,paragraph_id,
+        origin_content,content, similarity,create_time,
+        update_time
+    </sql>
+</mapper>

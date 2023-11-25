@@ -1,0 +1,13 @@
+dependencies {
+    api project(':content-checker-common')
+    implementation libs.commons.lang3
+    implementation libs.commons.math3
+    implementation libs.lucene.core
+    implementation libs.hanlp
+    implementation libs.jsoup
+    implementation libs.opencc4j
+    implementation libs.emoji.java
+    implementation libs.guava
+    implementation 'cn.hutool:hutool-core'
+
+}

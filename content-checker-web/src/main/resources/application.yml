@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/content-checker?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+  elasticsearch:
+    uris: "https://localhost:9200"
+    socket-timeout: "10s"
+    username: "elastic"
+    password: "gwO+DhAFKGhJmIcI3798"
+
+mybatis-plus:
+  mapperLocations: classpath*:/mapper/**/*.xml
+  typeAliasesPackage: com.eva.check.pojo
+  globalConfig:
+    dbConfig:
+      idType: AUTO
+
+server:
+  shutdown: "graceful"
+  servlet:
+    register-default-servlet: true
+content-check:
+  mq-type: eventBus
+
+#
+#  mvc:
+#    static-path-pattern: "/resources/**"

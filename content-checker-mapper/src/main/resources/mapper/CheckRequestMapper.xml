@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.eva.check.mapper.CheckRequestMapper">
+
+    <resultMap id="BaseResultMap" type="com.eva.check.pojo.CheckRequest">
+        <id property="checkId" column="check_id" jdbcType="BIGINT"/>
+        <result property="checkNo" column="check_no" jdbcType="VARCHAR"/>
+        <result property="reqSource" column="req_source" jdbcType="CHAR"/>
+        <result property="title" column="title" jdbcType="VARCHAR"/>
+        <result property="author" column="author" jdbcType="VARCHAR"/>
+        <result property="publishYear" column="publish_year" jdbcType="CHAR"/>
+        <result property="taskNum" column="task_num" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="CHAR"/>
+        <result property="similarity" column="similarity" jdbcType="DOUBLE"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        check_id,check_no,req_source,
+        title,author,publish_year,
+        task_num,status,similarity,create_time,
+        update_time
+    </sql>
+</mapper>

@@ -1,0 +1,7 @@
+dependencies {
+    api project(':content-checker-common')
+    api libs.mybatis.plus
+    implementation libs.mapStruct
+    annotationProcessor libs.mapStructProcessor
+//    implementation libs.mybatis.plus
+}

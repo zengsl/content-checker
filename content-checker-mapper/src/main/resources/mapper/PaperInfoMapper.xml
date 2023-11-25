@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.eva.check.mapper.PaperInfoMapper">
+
+    <resultMap id="BaseResultMap" type="com.eva.check.pojo.PaperInfo">
+            <id property="paperId" column="paper_id" jdbcType="BIGINT"/>
+            <result property="paperNo" column="paper_no" jdbcType="VARCHAR"/>
+            <result property="dataType" column="data_type" jdbcType="CHAR"/>
+            <result property="title" column="title" jdbcType="VARCHAR"/>
+            <result property="author" column="author" jdbcType="VARCHAR"/>
+            <result property="content" column="content" jdbcType="VARCHAR"/>
+            <result property="publishYear" column="publish_year" jdbcType="CHAR"/>
+            <result property="hash" column="hash" jdbcType="BIGINT"/>
+            <result property="hash1" column="hash1" jdbcType="VARCHAR"/>
+            <result property="hash2" column="hash2" jdbcType="VARCHAR"/>
+            <result property="hash3" column="hash3" jdbcType="VARCHAR"/>
+            <result property="hash4" column="hash4" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        paper_id,paper_no,data_type,
+        title,author,content,
+        publish_year,hash,create_time,
+        update_time
+    </sql>
+</mapper>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="https://www.thymeleaf.org/">
+<head>
+    <meta charset="UTF-8">
+    <title>检测结果查询</title>
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet" type="text/css" media="all"/>
+    <link th:href="@{/css/bootstrap-table.min.css}" rel="stylesheet" type="text/css" media="all"/>
+    <link th:href="@{/css/style.css}" rel="stylesheet" type="text/css" media="all"/>
+
+    <script th:src="@{/js/jquery-3.7.1.min.js}"></script>
+    <script th:src="@{/js/jquery.validate.min.js}"></script>
+    <script th:src="@{/js/bootstrap-table.min.js}"></script>
+    <script th:src="@{/js/axios.min.js}"></script>
+    <script th:src="@{/js/clipboard.min.js}"></script>
+</head>
+<body>
+<div class="container">
+    <h1>检测结果查询</h1>
+    <div class="my-2">
+        <form name="checkForm" id="checkForm" onsubmit="return false">
+            <div class="mb-3">
+                <label for="checkNo" class="form-label">检测编号<span class="required">*</span></label>
+                <input type="text" class="form-control" id="checkNo" name="checkNo" aria-describedby="emailHelp" required>
+            </div>
+            <button type="submit" class="btn btn-primary" onclick="submitReportSearch()">提交</button>
+        </form>
+    </div>
+
+    <div class="my-2">
+        <table class="table" id="result-table">
+        </table>
+    </div>
+</div>
+<script>
+    let checkForm = undefined;
+    $().ready(function () {
+        checkForm = $("#checkForm");
+        checkForm.validate();
+        $('#result-table').bootstrapTable({
+            // url: '',//如果需要请求后台获取初始数据的话，这里写请求地址
+            // toolbar: '#toolbar',
+            // clickEdit: true,
+            // showToggle: true,
+            // pagination: true,       //显示分页条
+            // showColumns: true,
+            // showPaginationSwitch: true,     //显示切换分页按钮
+            // showRefresh: true,      //显示刷新按钮
+            // //clickToSelect: true,  //点击row选中radio或CheckBox
+            columns: [
+                {
+                    field: 'index',
+                    title: '序列',
+                    formatter:function(value, row, index) {
+                        return row.index = index+1; //返回行号
+                    }
+                },{
+                    field: 'checkNo',
+                    title: '检测编号',
+                },
+                {
+                    field: 'title',
+                    title: '标题',
+                }, {
+                    field: 'author',
+                    title: '作者',
+
+                },{
+                    field: 'publishYear',
+                    title: '发布年份',
+
+                },{
+                    field: 'taskNum',
+                    title: '检测任务数',
+
+                },{
+                    field: 'similarity',
+                    title: '相似度',
+
+                },{
+                    field: 'status',
+                    title: '状态',
+
+                },{
+                    field: 'createTime',
+                    title: '提交时间',
+
+                }]
+        });
+    });
+    const submitReportSearch = () => {
+        if (checkForm.valid()) {
+           const checkNo = $("#checkNo").val();
+            console.log('checkNo', checkNo);
+            axios.get("/check/getCheckResult", {params: {checkNo}}).then((response) => {
+                if (response.data.code === 200) {
+                    alert("检测请求已提交");
+                    addRow(response.data.data)
+                } else {
+                    alert("查询失败");
+                    console.error(response.data)
+                }
+            }).catch((error) => {
+                console.log(error);
+            });
+        }
+    }
+
+
+    const addRow = (data) => {
+        console.log('data', data)
+        $('#result-table').bootstrapTable('append', data)
+    }
+
+</script>
+</body>
+</html>

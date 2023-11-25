@@ -1,0 +1,8 @@
+dependencies {
+    api project(':content-checker-pojo')
+    implementation libs.mybatis.plus.test
+    implementation libs.mybatis.plus.boot.starter
+    implementation "com.mysql:mysql-connector-j"
+//    implementation "mybatis-boot-starter"
+    testImplementation 'com.h2database:h2'
+}

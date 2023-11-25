@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/content-checker?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+
+mybatis-plus:
+  mapperLocations: classpath*:/mapper/**/*.xml
+  typeAliasesPackage: com.eva.check.pojo
+  globalConfig:
+    dbConfig:
+      idType: AUTO
