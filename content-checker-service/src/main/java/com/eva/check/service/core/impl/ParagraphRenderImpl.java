@@ -1,5 +1,6 @@
 package com.eva.check.service.core.impl;
 
+import cn.hutool.core.util.NumberUtil;
 import com.eva.check.common.enums.TextColor;
 import com.eva.check.pojo.CheckSentence;
 import com.eva.check.service.core.SimilarTextRender;
@@ -35,7 +36,11 @@ public class ParagraphRenderImpl implements SimilarTextRender {
             }
             TextColor textColor = this.similarTextRule.computeTextColor(checkSentence.getSimilarity());
             originalText = originalText.replaceAll(checkSentence.getOriginContent(),
-                    textColor.renderHtml(checkSentence.getOriginContent(), checkSentence.getSentenceId().toString()));
+                    textColor.renderHtml(checkSentence.getOriginContent()
+                            , checkSentence.getSentenceId().toString()
+                            , NumberUtil.decimalFormat("#.##%", checkSentence.getSimilarity())
+                    )
+            );
         }
 
         return originalText;

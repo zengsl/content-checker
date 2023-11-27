@@ -45,8 +45,8 @@ public enum TextColor implements IBaseEnum<String> {
 
     abstract String getCssClass();
 
-   public String renderHtml(String text, String id ) {
-        return "<a href='javascript:void(0);' data-id="+id+" id='words_"+ id +"'  class='similar-word "+ this.getCssClass()+"' onclick='showDetailContainer(this)'>" + text + "</a>";
+    public String renderHtml(String text, String id, String similarity) {
+        return "<a href='javascript:void(0);' data-similarity=" + similarity + " data-id=" + id + " id='words_" + id + "'  class='similar-word " + this.getCssClass() + "' onclick='showDetailContainer(this)'>" + text + "</a>";
     }
 
     private final String name;

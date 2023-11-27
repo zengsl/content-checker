@@ -52,12 +52,12 @@
     <div class="row paper-result-container">
         <div class="col-8 paper-result-content">
             <!--<div class="paper-result" onclick="showDetailContainer()"> [[${contentCheckTask.content}]]</div>-->
-            <div class="paper-result" >
+            <div class="paper-result">
                 <div th:each="reportParagraph:${reportParagraphs}">
-                <div th:utext="${reportParagraph.content}"></div>
+                    <div th:utext="${reportParagraph.content}"></div>
                 </div>
-
             </div>
+            <div class="similar-word-tip">相似度:<span class="similar-word-tip-result">XXXX</span></div>
         </div>
         <div class="col paper-report-detail">
             <div class="paper-report-similarity-intro">
@@ -82,18 +82,44 @@
 </div>
 <script>
     let currentSentenceId = null;
+
     function hideDetailContainer() {
-        $('#words_'+currentSentenceId).removeClass("active")
+        $('#words_' + currentSentenceId).removeClass("active")
         currentSentenceId = null;
         $("#detailContainer").hide()
     }
 
     function showDetailContainer(el) {
-        $('#words_'+currentSentenceId).removeClass("active")
+        $('#words_' + currentSentenceId).removeClass("active")
         $(el).addClass("active")
         currentSentenceId = el.dataset.id
         $("#detailContainer").show()
     }
+
+    function similarWordShow(event) {
+        let $similarTip = $('.similar-word-tip');
+        $similarTip.show()
+        let clientX = event.clientX;
+        let clientY = event.clientY;
+        $similarTip.css("top", (clientY + 8) + "px");
+        $similarTip.css("left", (clientX + 8) + "px");
+        $('.similar-word-tip-result').text(event.target.dataset.similarity);
+    }
+
+    function similarWordHide(event) {
+        $('.similar-word-tip').hide()
+    }
+
+
+    $(document).ready(function () {
+        $('a[id^="words_"]').hover(function (e) {
+            // similarWordShow(e)
+        }, function (e) {
+            similarWordHide(e)
+        }).mousemove(function (e) {
+            similarWordShow(e)
+        });
+    })
 </script>
 </body>
 </html>

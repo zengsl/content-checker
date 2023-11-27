@@ -83,6 +83,7 @@
 
 .similar-word {
     opacity: 1;
+    text-decoration: none;
 }
 
 .similar-word:hover {
@@ -95,6 +96,17 @@
 
 .similar-word.active {
     opacity: 0.5;
+}
+
+.similar-word-tip {
+    position: fixed;
+    display: none;
+    border: 1px solid rgb(0, 0, 0);
+    font-size: 13px;
+    background: rgb(255, 255, 255);
+    z-index: 999;
+    padding: 6px 4px;
+    white-space: nowrap;
 }
 
 .orange {
