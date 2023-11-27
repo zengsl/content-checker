@@ -8,12 +8,10 @@ import co.elastic.clients.transport.Version;
 import co.elastic.clients.transport.rest_client.RestClientOptions;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
 import com.eva.check.common.constant.MessageQueueConstants;
-import com.eva.check.service.core.CheckTaskExecutor;
-import com.eva.check.service.core.DuplicateCheckPrepareService;
-import com.eva.check.service.core.DuplicateCheckService;
-import com.eva.check.service.core.SimilarityStrategy;
+import com.eva.check.service.core.*;
 import com.eva.check.service.core.impl.DefaultCheckTaskExecutorImpl;
 import com.eva.check.service.core.impl.DefaultSimilarityStrategy;
+import com.eva.check.service.core.impl.ParagraphRenderImpl;
 import com.eva.check.service.mq.consumer.eventbus.CheckTaskEventBusListenerImpl;
 import com.eva.check.service.mq.consumer.eventbus.ContentCheckEventBusListenerImpl;
 import com.eva.check.service.mq.producer.SendMqService;
@@ -69,6 +67,13 @@ import java.util.function.Consumer;
 @EnableCaching
 @EnableElasticsearchRepositories("com.eva.check.service.es.repository")
 public class ContentCheckAutoConfiguration extends ElasticsearchConfiguration {
+
+    @Bean
+    SimilarTextRender paragraphRender(CheckSentenceService checkSentenceService) {
+        // 文本渲染
+        return new ParagraphRenderImpl(checkSentenceService);
+    }
+
 
     @Bean
     SimilarityStrategy similarityStrategy() {

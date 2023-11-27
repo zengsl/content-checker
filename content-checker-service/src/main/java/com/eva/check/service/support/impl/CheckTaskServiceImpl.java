@@ -50,6 +50,15 @@ public class CheckTaskServiceImpl extends ServiceImpl<CheckTaskMapper, CheckTask
         queryWrapper.eq(CheckTask::getCheckId, checkId);
         return this.baseMapper.selectList(queryWrapper);
     }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public CheckTask findCheckTask(String checkNo, String checkType) {
+        LambdaQueryWrapper<CheckTask> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CheckTask::getCheckNo, checkNo);
+        queryWrapper.eq(CheckTask::getCheckType, checkType);
+        return this.baseMapper.selectOne(queryWrapper);
+    }
 }
 
 

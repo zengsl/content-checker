@@ -1,7 +1,9 @@
 package com.eva.check.service.support;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.eva.check.common.enums.DataType;
 import com.eva.check.pojo.CheckTask;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -18,4 +20,11 @@ public interface CheckTaskService extends IService<CheckTask> {
     void dispatchTask(List<CheckTask> checkTaskList);
 
     List<CheckTask> findByCheckId(Long checkId);
+
+    @Transactional(rollbackFor = Exception.class)
+    default CheckTask findContentCheckTask(String checkNo){
+        return this.findCheckTask(checkNo, DataType.FULL_TEXT.getValue());
+    }
+
+    CheckTask findCheckTask(String checkNo, String checkType);
 }

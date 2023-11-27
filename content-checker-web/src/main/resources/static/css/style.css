@@ -1,13 +1,130 @@
 .welcome-content {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        font-style: italic;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-style: italic;
 }
 
-.required{
-        color: red;
+.required {
+    color: red;
+}
+
+.paper-result-base-info {
+    height: 120px;
+}
+
+.paper-result-nav {
+    height: 40px;
+    background: #323639 !important;
+    padding: 0 15px;
+    /*color: #e6e6e6 !important;*/
+}
+
+.paper-result-container {
+    height: calc(100vh - 168px);
+
+}
+
+.paper-result-content {
+    background: #484f52 !important;
+    padding: 20px 40px;
+}
+
+.paper-result {
+    width: 100%;
+    height: 100%;
+    background: white !important;
+    padding: 40px 40px;
+    line-height: 30px;
+}
+
+.paper-report-detail {
+    position: relative;
+}
+
+.paper-report-similarity-intro {
+    padding: 30px;
+}
+
+.paper-report-similarity-intro .intro-diamond {
+    width: 10px;
+    height: 10px;
+    margin-right: 5px;
+    display: inline-block;
+    background: transparent;
+    vertical-align: middle;
+    border-radius: 50%;
+}
+
+.paper-report-detail-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    background: white;
+}
+
+
+.paper-report-detail-content {
+    padding-left: 10px;
+}
+
+.paper-report-detail-container-close {
+    display: flex;
+    justify-content: right;
+    padding: 10px 10px;
+    cursor: pointer;
+}
+
+.similar-word {
+    opacity: 1;
+}
+
+.similar-word:hover {
+    opacity: 0.5;
+}
+
+.similar-word:active {
+    opacity: 0.5;
+}
+
+.similar-word.active {
+    opacity: 0.5;
+}
+
+.orange {
+    color: #f39800;
+}
+
+.red {
+    color: #f12828;
+}
+
+.green {
+    color: green;
+}
+
+.black {
+    color: black;
+}
+
+.intro-diamond.red {
+    background: #e95252;
+}
+
+.intro-diamond.orange {
+    background: #f06541;
+}
+
+.intro-diamond.green {
+    background: #56b282;
+}
+
+.intro-diamond.black {
+    background: #000000;
 }

@@ -25,6 +25,7 @@ dependencyResolutionManagement {
             version("hutoolVersion", "5.8.22")
             version("mybatisPlusVersion", "3.5.4")
             version("mapStructVersion", "1.5.5.Final")
+            version("thymeleafExtraVersion", "3.0.4.RELEASE")
             library('commons-lang3', 'org.apache.commons:commons-lang3:3.13.0')
             library('commons-math3', 'org.apache.commons:commons-math3:3.6.1')
             library('lucene-core', 'org.apache.lucene:lucene-core:9.8.0')
@@ -45,6 +46,7 @@ dependencyResolutionManagement {
             library('hutool-bom', 'cn.hutool','hutool-bom').versionRef('hutoolVersion')
             library('mapStruct', 'org.mapstruct','mapstruct').versionRef('mapStructVersion')
             library('mapStructProcessor', 'org.mapstruct','mapstruct-processor').versionRef('mapStructVersion')
+            library('thymeleafExtraJavaTime', 'org.thymeleaf.extras','thymeleaf-extras-java8time').versionRef('thymeleafExtraVersion')
         }
     }
 }

@@ -76,11 +76,23 @@
                     field: 'similarity',
                     title: '相似度',
 
-                },{
+                }, {
                     field: 'status',
                     title: '状态',
-
-                },{
+                    formatter: function (value, row, index) {
+                        // 状态: 0 待处理,  1 处理中， 2 已完成
+                        if (value === '0') {
+                            return '待处理'
+                        } else if (value === '1') {
+                            return '处理中'
+                        } else if (value === '2') {
+                            return '已完成'
+                        } else if (value === '3') {
+                            return '报告已生成'
+                        }
+                    }
+                }
+                ,{
                     field: 'createTime',
                     title: '提交时间',
 
@@ -94,6 +106,7 @@
             axios.get("/check/getCheckResult", {params: {checkNo}}).then((response) => {
                 if (response.data.code === 200) {
                     alert("检测请求已提交");
+                    clearTable()
                     addRow(response.data.data)
                 } else {
                     alert("查询失败");
@@ -105,9 +118,11 @@
         }
     }
 
-
+    const clearTable = () => {
+        $('#result-table').bootstrapTable('removeAll')
+    }
     const addRow = (data) => {
-        console.log('data', data)
+        console.log('$(\'#result-table\').bootstrapTable', $('#result-table').bootstrapTable)
         $('#result-table').bootstrapTable('append', data)
     }
 
