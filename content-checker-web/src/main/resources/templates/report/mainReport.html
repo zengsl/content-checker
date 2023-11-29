@@ -3,15 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <title>检测报告</title>
-    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet" type="text/css" media="all"/>
-    <link th:href="@{/css/bootstrap-table.min.css}" rel="stylesheet" type="text/css" media="all"/>
-    <link th:href="@{/css/style.css}" rel="stylesheet" type="text/css" media="all"/>
+    <link th:if="${isDownload}"     href="css/bootstrap.min.css" rel="stylesheet" type="text/css" media="all"/>
+    <link th:unless="${isDownload}" th:href="@{/css/bootstrap.min.css}" rel="stylesheet" type="text/css" media="all"/>
 
-    <script th:src="@{/js/axios.min.js}"></script>
-    <script th:src="@{/js/jquery-3.7.1.min.js}"></script>
-    <script th:src="@{/js/jquery.validate.min.js}"></script>
-    <script th:src="@{/js/bootstrap-table.min.js}"></script>
-    <script th:src="@{/js/clipboard.min.js}"></script>
+   <!-- <link th:if="${isDownload}"     href="css/bootstrap-table.min.css" rel="stylesheet" type="text/css" media="all"/>
+    <link th:unless="${isDownload}" th:href="@{/css/bootstrap-table.min.css}" rel="stylesheet" type="text/css" media="all"/>-->
+
+
+    <link th:if="${isDownload}"     href="css/style.css" rel="stylesheet" type="text/css" media="all"/>
+    <link th:unless="${isDownload}" th:href="@{/css/style.css}" rel="stylesheet" type="text/css" media="all"/>
+
+<!--    <script th:if="${isDownload}"     src="js/axios.min.js"></script>
+    <script th:unless="${isDownload}" th:src="@{/js/axios.min.js}"></script>-->
+
+    <script th:if="${isDownload}"     src="js/jquery-3.7.1.min.js"></script>
+    <script th:unless="${isDownload}" th:src="@{/js/jquery-3.7.1.min.js}"></script>
+
+ <!--   <script th:if="${isDownload}"     src="js/jquery.validate.min.js"></script>
+    <script th:unless="${isDownload}" th:src="@{/js/jquery.validate.min.js}"></script>
+
+    <script th:if="${isDownload}"     src="js/bootstrap-table.min.js"></script>
+    <script th:unless="${isDownload}" th:src="@{/js/bootstrap-table.min.js}"></script>
+
+    <script th:if="${isDownload}"     src="js/clipboard.min.js"></script>
+    <script th:unless="${isDownload}" th:src="@{/js/clipboard.min.js}"></script>-->
 </head>
 <body class="vh-100">
 <div class="container-fluid">
@@ -40,21 +55,24 @@
         </div>
     </div>
     <div class="row paper-result-nav">
-        <ul class="nav">
-            <li class="nav-item"><a class="nav-link " style="color: #e6e6e6" aria-current="page" href="#">详细报告</a>
-            </li>
-            <li class="nav-item"><a class="nav-link disabled" style="color: #e6e6e6" aria-current="page"
-                                    href="#">综合评估</a></li>
-            <li class="nav-item"><a class="nav-link disabled" style="color: #e6e6e6" aria-current="page"
-                                    href="#">使用帮助</a></li>
-        </ul>
+        <div class="col-9">
+            <ul class="nav">
+                <li class="nav-item"><a class="nav-link " style="color: #e6e6e6" aria-current="page"
+                                        href="#">详细报告</a>
+                </li>
+                <li class="nav-item"><a class="nav-link disabled" style="color: #e6e6e6" aria-current="page"
+                                        href="#">综合评估</a></li>
+                <li class="nav-item"><a class="nav-link disabled" style="color: #e6e6e6" aria-current="page"
+                                        href="#">使用帮助</a></li>
+            </ul>
+        </div>
+        <div class="col d-flex justify-content-end align-items-center" th:unless="${isDownload}"><a th:href="'/report/download/'+${checkRequest.checkNo}">下载报告</a></div>
     </div>
     <div class="row paper-result-container">
         <div class="col-8 paper-result-content">
-            <!--<div class="paper-result" onclick="showDetailContainer()"> [[${contentCheckTask.content}]]</div>-->
             <div class="paper-result">
                 <div th:each="reportParagraph:${reportParagraphs}">
-                    <div th:utext="${reportParagraph.content}"></div>
+                    <div th:utext="${reportParagraph.renderContent}"></div>
                 </div>
             </div>
             <div class="similar-word-tip">相似度:<span class="similar-word-tip-result">XXXX</span></div>
@@ -74,29 +92,112 @@
                 请点击论文中“红色”和“橙色”标记的部分
             </div>
             <div class="paper-report-detail-container" style="display: none" id="detailContainer">
-                <div class="paper-report-detail-container-close" onclick="hideDetailContainer()">X</div>
-                <div class="paper-report-detail-content">疑似句子</div>
+                <div class="paper-report-detail-header">
+                    <div class="paper-report-detail-header-top">
+                        <div class="paper-report-detail-header-top-similarity font-bold">该句相似度：<span
+                                class="detail-top-similarity">xxx</span></div>
+                        <div class="paper-report-detail-container-close" onclick="hideDetailContainer()">X</div>
+                    </div>
+                    <div class="paper-report-detail-header-word">
+                        <p class="font-bold">您的语句：</p>
+                        <div id="originalSentence" class="detail-original-sentence">xxx</div>
+                    </div>
+                </div>
+                <div class="paper-report-detail-nav">
+                    <!--详情-->
+                </div>
+                <div class="paper-report-detail-main">
+                    <div class="similar-sentence-counter-info">共找出相似内容：<span id="similarSentenceCount"></span>个
+                    </div>
+                    <div class="g-line-row"></div>
+                    <div id="similarSentenceList">
+
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
-<script>
-    let currentSentenceId = null;
+<script type="text/template" id="similarSentenceTemplate">
+    <div class="similar-sentence-container">
+        <div class="similar-sentence-top">
+            <div class="similar-sentence-left"><span class="chapter-symbol"></span><span
+                    class="chapter-num">{{num}}</span></div>
+            <div class="similar-sentence-right">相似度：<span
+                    class="sentence-pair-similarity {{cssClassName}}">{{similarity}}</span>
+            </div>
+        </div>
+        <div class="segment"><p class="font-bold">您的句子</p>
+            <div class="{{cssClassName}}">{{checkSentence}}</div>
+        </div>
+        <div class="segment"><p class="font-bold ">相似句子：</p>
+            <div class="green">{{targetSentence}}</div>
+        </div>
+        <div class="segment"><p class="font-bold">来源</p>
+            <div>
+                标题：<span>{{title}}</span><br/>
+                作者：<span>{{author}}</span><br/>
+                发布年份：<span>{{publishYear}}</span><br/>
+            </div>
+        </div>
+    </div>
+    <div className="g-line-row"></div>
+</script>
+<script th:inline="javascript">
+    let lastSentence = null;
+    const similarSentenceMap = [[${similarSentenceResultMap}]];
+    const similarSentenceTemplate = $('#similarSentenceTemplate').html()
 
     function hideDetailContainer() {
-        $('#words_' + currentSentenceId).removeClass("active")
-        currentSentenceId = null;
+        $(lastSentence).removeClass("active")
+        lastSentence = null;
         $("#detailContainer").hide()
     }
 
     function showDetailContainer(el) {
-        $('#words_' + currentSentenceId).removeClass("active")
+        $(lastSentence).removeClass("active")
+        lastSentence = el
+        // 给点击句子设置激活样式
         $(el).addClass("active")
-        currentSentenceId = el.dataset.id
+        // 给右侧面板设置当前句子相似度内容
+        let $detailTop = $('.detail-top-similarity');
+        $detailTop.text(el.dataset.similarity)
+        // 删除并添加颜色样式
+        $detailTop.removeClass("red")
+        $detailTop.removeClass("orange")
+        $detailTop.addClass(el.dataset.colorClass)
+        $('#originalSentence').text(el.innerText)
+
+        // 给右侧面板设置与当前句子相似的所有句子的内容
+        let sentenceResult = similarSentenceMap[el.dataset.id];
+        $('#similarSentenceCount').text(sentenceResult.similarCount);
+        let documentFragment = new DocumentFragment();
+        for (let i = 0; i < sentenceResult.sentencePairResultList.length; i++) {
+            let sentencePairResult = sentenceResult.sentencePairResultList[i];
+            const params = {
+                "num": i + 1,
+                "similarity": sentencePairResult.formatSimilarity,
+                "checkSentence": el.innerText,
+                "targetSentence": sentencePairResult.targetSentence,
+                "title": sentencePairResult.targetTitle,
+                "author": sentencePairResult.targetAuthor,
+                "publishYear": sentencePairResult.targetPublishYear,
+                "cssClassName": sentencePairResult.cssClassName,
+            };
+            let templateContent = parseTemplate(similarSentenceTemplate, params);
+            if (templateContent) {
+                /*const div = document.createElement("div");
+                div.innerHTML = templateContent;*/
+                documentFragment.append(templateContent)
+            }
+        }
+        // 先清除旧的内容
+        $('#similarSentenceList').empty()
+        document.querySelector('#similarSentenceList').innerHTML = documentFragment.textContent
         $("#detailContainer").show()
     }
 
-    function similarWordShow(event) {
+    function similarWordTipShow(event) {
         let $similarTip = $('.similar-word-tip');
         $similarTip.show()
         let clientX = event.clientX;
@@ -106,18 +207,24 @@
         $('.similar-word-tip-result').text(event.target.dataset.similarity);
     }
 
-    function similarWordHide(event) {
+    function similarWordTipHide(event) {
         $('.similar-word-tip').hide()
     }
 
 
+    function parseTemplate(template, data) {
+        return template.replace(/\{\{(.+?)}}/g, function (match, key) {
+            return data[key] || '';
+        });
+    }
+
     $(document).ready(function () {
         $('a[id^="words_"]').hover(function (e) {
-            // similarWordShow(e)
+            // similarWordTipShow(e)
         }, function (e) {
-            similarWordHide(e)
+            similarWordTipHide(e)
         }).mousemove(function (e) {
-            similarWordShow(e)
+            similarWordTipShow(e)
         });
     })
 </script>

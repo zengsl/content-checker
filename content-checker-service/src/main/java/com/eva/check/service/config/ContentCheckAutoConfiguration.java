@@ -69,9 +69,9 @@ import java.util.function.Consumer;
 public class ContentCheckAutoConfiguration extends ElasticsearchConfiguration {
 
     @Bean
-    SimilarTextRender paragraphRender(CheckSentenceService checkSentenceService) {
+    SimilarTextRender paragraphRender() {
         // 文本渲染
-        return new ParagraphRenderImpl(checkSentenceService);
+        return new ParagraphRenderImpl();
     }
 
 

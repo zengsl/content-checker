@@ -1,6 +1,5 @@
 package com.eva.check.pojo.vo;
 
-import lombok.Builder;
 import lombok.Data;
 
 /**
@@ -16,7 +15,7 @@ public class ReportDetailParagraphVO {
 
     private Double similarity;
 
-    private String content;
+    private String renderContent;
 
     private Integer paragraphNum;
 }

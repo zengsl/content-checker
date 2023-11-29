@@ -12,6 +12,8 @@ import com.eva.check.pojo.PaperInfo;
 */
 public interface PaperInfoMapper extends BaseMapper<PaperInfo> {
 
+
+    PaperInfo getByParagraphId(Long paragraphId);
 }
 
 

@@ -13,7 +13,8 @@ public interface SimilarTextRender {
      *
      * @param originalText 原始文本
      * @param similarity   相似度
+     * @param sentenceId   句子sentenceId
      * @return String
      */
-    String render(String originalText, Double similarity, Long checkParagraphId);
+    String renderSentence(String originalText, Double similarity, String sentenceId);
 }

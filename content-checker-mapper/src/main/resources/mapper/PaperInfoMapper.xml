@@ -27,4 +27,11 @@
         publish_year,hash,create_time,
         update_time
     </sql>
+
+    <select id="getByParagraphId" resultType="com.eva.check.pojo.PaperInfo" parameterType="long">
+        select
+        <include refid="Base_Column_List"></include>
+        from paper_info pi where exists(select 1 from paper_paragraph pp where pp.paper_id = pi.paper_id and
+        pp.paragraph_id = #{paragraphId})
+    </select>
 </mapper>

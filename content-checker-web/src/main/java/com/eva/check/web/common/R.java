@@ -2,7 +2,6 @@ package com.eva.check.web.common;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.*;
 import lombok.experimental.Accessors;
 

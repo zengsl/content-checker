@@ -9,6 +9,9 @@ spring:
     socket-timeout: "10s"
     username: "elastic"
     password: "gwO+DhAFKGhJmIcI3798"
+  thymeleaf:
+    cache: false
+
 
 mybatis-plus:
   mapperLocations: classpath*:/mapper/**/*.xml
@@ -21,6 +24,7 @@ server:
   shutdown: "graceful"
   servlet:
     register-default-servlet: true
+
 content-check:
   mq-type: eventBus
 

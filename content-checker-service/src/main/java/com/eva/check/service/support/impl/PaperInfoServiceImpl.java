@@ -34,6 +34,12 @@ public class PaperInfoServiceImpl extends ServiceImpl<PaperInfoMapper, PaperInfo
         updateWrapper.eq(PaperInfo::getPaperNo, paperNo);
         return this.baseMapper.delete(updateWrapper) ;
     }
+
+    @Transactional(readOnly = true)
+    @Override
+    public PaperInfo getByParagraphId(Long paragraphId) {
+        return this.baseMapper.getByParagraphId(paragraphId);
+    }
 }
 
 

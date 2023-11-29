@@ -15,7 +15,7 @@
 </head>
 <body>
 <div class="container">
-    <h1>检测结果查询</h1>
+    <div class="d-flex justify-content-between"><h1>检测结果查询</h1><a  href="/">返回</a></div>
     <div class="my-2">
         <form name="checkForm" id="checkForm" onsubmit="return false">
             <div class="mb-3">
@@ -89,6 +89,14 @@
                             return '已完成'
                         } else if (value === '3') {
                             return '报告已生成'
+                        }
+                    }
+                }, {
+                    field: 'report',
+                    title: '报告',
+                    formatter: function (value, row, index) {
+                        if (row.status === '2' || row.status === '2') {
+                            return '<a href="/report/' + row.checkNo + '" target="_blank">查看</a>'
                         }
                     }
                 }

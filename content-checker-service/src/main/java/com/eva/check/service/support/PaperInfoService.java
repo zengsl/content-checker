@@ -14,4 +14,7 @@ public interface PaperInfoService extends IService<PaperInfo> {
 
     int removeByPaperNo(String paperNo);
 
+    PaperInfo getByParagraphId(Long paragraphId);
+
+
 }
