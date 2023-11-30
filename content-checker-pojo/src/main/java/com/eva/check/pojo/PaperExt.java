@@ -1,5 +1,6 @@
 package com.eva.check.pojo;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.eva.check.pojo.common.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -13,7 +14,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class PaperExt extends BaseEntity {
-
+    @TableId
     private Long paperId;
 
     private  String dataType;

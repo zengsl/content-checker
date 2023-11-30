@@ -7,7 +7,7 @@ import java.io.File;
 import java.util.Date;
 
 @UtilityClass
-public class FileUtil {
+public class FileUtil extends cn.hutool.core.io.FileUtil {
 
     public String generatePathByDate() {
         Date date = DateUtil.date();

@@ -1,8 +1,12 @@
 package com.eva.check.service.core;
 
 import com.eva.check.common.exception.SystemException;
+import com.eva.check.pojo.CheckReport;
 import com.eva.check.pojo.CheckRequest;
+import com.eva.check.pojo.dto.CheckReportDTO;
 import com.eva.check.pojo.dto.PaperCheckReq;
+
+import java.util.Map;
 
 /**
  * 论文检测服务
@@ -43,7 +47,17 @@ public interface PaperCheckService {
      * 获取检测报告
      *
      * @param checkNo  检测编号
+     * @return CheckReportDTO
      */
-    String getPaperCheckReport(String checkNo) throws SystemException;
+    CheckReportDTO getPaperCheckReport(String checkNo) throws SystemException;
+
+
+    CheckReportDTO getOrCreateReportFile(String checkNo) throws SystemException;
+
+    Map<String, Object> getPaperCheckReportParams(String checkNo) throws SystemException;
+
+    CheckReport generateReportFile(String checkNo) throws SystemException;
+
+    CheckReport reGenerateReportFile(String checkNo) throws SystemException;
 
 }
