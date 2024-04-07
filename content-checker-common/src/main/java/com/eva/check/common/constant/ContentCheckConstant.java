@@ -9,4 +9,9 @@ package com.eva.check.common.constant;
 public interface ContentCheckConstant {
 
     double PRE_CHECK_THRESHOLD = 0.5D;
+
+    /**
+     * 数据来源默认值：互联网
+     */
+    String DATA_SOURCE_DEFAULT = "1";
 }

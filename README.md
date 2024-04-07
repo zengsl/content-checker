@@ -66,3 +66,9 @@ run the main method in `com.eva.check.web.ContentCheckerWebApplication`
 You can init paper library with  `PaperDataCreatorTest`
 
 You can check paper library with  `PaperCheckServiceImplTest` or web page
+
+
+
+## TODO
+
+- [ ] 分词优化

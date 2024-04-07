@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.io.IOException;
@@ -24,7 +25,11 @@ public class PaperDataCreatorTest {
 
     @Autowired
     private PaperCollectService paperCollectService;
-    public static final String INIT_DATA_PATH = "initData";
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    public static final String INIT_DATA_PATH = "initDataGz";
 
     @Test
     void testInitData() throws IOException, URISyntaxException {
@@ -49,5 +54,32 @@ public class PaperDataCreatorTest {
 
             }
         }
+    }
+
+
+    @Test
+    void testClearData() {
+        this.testClearBaseData();
+        this.testClearCheckData();
+    }
+
+    @Test
+    void testClearBaseData() {
+        this.jdbcTemplate.execute("delete from paper_ext");
+        this.jdbcTemplate.execute("delete from paper_info");
+        this.jdbcTemplate.execute("delete from paper_paragraph");
+        this.jdbcTemplate.execute("delete from paper_sentence");
+        this.jdbcTemplate.execute("delete from paper_token");
+    }
+
+    @Test
+    void testClearCheckData() {
+        this.jdbcTemplate.execute("delete from check_request");
+        this.jdbcTemplate.execute("delete from check_task");
+        this.jdbcTemplate.execute("delete from check_report");
+        this.jdbcTemplate.execute("delete from check_paragraph");
+        this.jdbcTemplate.execute("delete from check_paragraph_pair");
+        this.jdbcTemplate.execute("delete from check_sentence");
+        this.jdbcTemplate.execute("delete from check_sentence_pair");
     }
 }

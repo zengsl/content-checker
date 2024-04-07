@@ -17,6 +17,7 @@ import com.eva.check.service.es.repository.PaperParagraphRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -44,11 +45,12 @@ public class PaperCoreServiceImpl implements PaperCoreService {
     @Override
     public List<SimilarPaperParagraph> findSimilarPaperParagraph(PaperParagraph paperParagraph) {
 
-        // TODO pageAfter分页,当前的pageSize只是做一个安全防御
+        // TODO pageAfter分页,当前的pageSize只是做一个安全防御。按照目前的一般的业务场景来说，不会超过该阈值。
         int pageSize = 5000;
+
         Query paperNoQuery = MatchQuery.of(m -> m
-                .field("paperNoQuery")
-                .query(paperParagraph.getPaperNo())
+                .field("paperNo")
+                .query(StringUtils.hasText(paperParagraph.getPaperNo()) ? paperParagraph.getPaperNo() : "-11")
         )._toQuery();
 
         Query moreLikeThisQuery = MoreLikeThisQuery.of(m -> m

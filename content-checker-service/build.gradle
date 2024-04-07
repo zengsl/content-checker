@@ -24,4 +24,5 @@ dependencies {
     testImplementation "com.mysql:mysql-connector-j"
     testImplementation libs.mybatis.plus.test
     testImplementation libs.mybatis.plus.boot.starter
+    testImplementation 'commons-io:commons-io:2.15.1'
 }

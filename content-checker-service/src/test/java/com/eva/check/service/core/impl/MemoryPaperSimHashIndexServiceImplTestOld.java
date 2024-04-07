@@ -110,7 +110,7 @@ class MemoryPaperSimHashIndexServiceImplTestOld {
                 .content(document)
                 .publishYear("2019")
                 .dataType(DataType.FULL_TEXT.getValue())
-                .dataSource(DataSource.INTERNET.getValue())
+                .dataSource(ContentCheckConstant.DATA_SOURCE_DEFAULT)
                 .build();
         paperSimHashIndexService.addHash(paperAddReq);
         List<PaperSimHashIndexService.SimplePaperInfo> similarPaperList = paperSimHashIndexService.findSimilarPaper(paperAddReq);

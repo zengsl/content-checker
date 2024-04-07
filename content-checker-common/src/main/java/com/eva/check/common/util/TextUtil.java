@@ -30,6 +30,9 @@ import java.util.*;
 @UtilityClass
 public class TextUtil {
 
+    /**
+     * 默认句子分隔符
+     */
     final static String DEFAULT_SENTENCE_SEPARATOR = "[，,。:：“”？?！!；;]";
     /*final static String DEFAULT_PARAGRAPH_SEPARATOR = "[\r\n]";
 

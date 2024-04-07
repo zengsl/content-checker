@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="https://www.thymeleaf.org/">
+<head>
+    <meta charset="UTF-8">
+    <title>内容收集</title>
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet" type="text/css" media="all"/>
+    <link th:href="@{/css/style.css}" rel="stylesheet" type="text/css" media="all"/>
+    <script th:src="@{/js/jquery-3.7.1.min.js}"></script>
+    <script th:src="@{/js/jquery.validate.min.js}"></script>
+    <script th:src="@{/js/axios.min.js}"></script>
+    <script th:src="@{/js/clipboard.min.js}"></script>
+</head>
+<body>
+<div class="container">
+    <div class="d-flex justify-content-between"><h1>内容收集(入库)</h1><a  href="/">返回</a></div>
+    <div class="my-2">
+        <form name="checkForm" id="checkForm" onsubmit="return false">
+            <div class="mb-3">
+                <label for="title" class="form-label">文章标题<span class="required">*</span></label>
+                <input type="text" class="form-control" id="title" name="title" aria-describedby="emailHelp" required>
+            </div>
+            <div class="mb-3">
+                <label for="author" class="form-label">作者</label>
+                <input type="text" class="form-control" id="author" name="author">
+            </div>
+            <div class="mb-3">
+                <label for="paperNo" class="form-label">编号</label>
+                <input type="text" class="form-control" id="paperNo" name="paperNo">
+            </div>
+            <div class="mb-3">
+                <label for="publishYear" class="form-label">发布年份</label>
+                <input type="text" class="form-control" id="publishYear" name="publishYear">
+            </div>
+            <div class="mb-3">
+                <label for="content" class="form-label">文章内容<span class="required">*</span></label>
+                <textarea class="form-control" id="content" name="content" rows="8" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" onclick="submitCheckForm()">提交</button>
+        </form>
+    </div>
+    <div class="my-2" style="display: none" id="paperNoDiv">
+        <div  class="form-text">根据论文编号进行检索</div>
+        论文编号：<span id="checkNo2"></span> <button type="button" id="copyBtn" class="btn btn-secondary" >复制</button>
+    </div>
+</div>
+<script>
+    let checkForm = undefined;
+    $().ready(function () {
+        checkForm = $("#checkForm");
+        checkForm.validate();
+    });
+    const submitCheckForm = () => {
+        if (checkForm.valid()) {
+            $('#paperNoDiv').hide()
+            const data = checkForm.serialize();
+            axios.post("/collect", data).then((response) => {
+                if (response.data.code === 200) {
+                    alert("入库请求已提交");
+                    $('#checkNo2').text(response.data.data)
+                    $('#paperNoDiv').show()
+                } else {
+                    alert("入库请求提交失败");
+                }
+            }).catch((error) => {
+                console.log(error);
+            });
+        }
+    }
+
+
+    new ClipboardJS('#copyBtn', {
+        text: function(trigger) {
+            return document.getElementById("checkNo2").textContent;
+        }
+    }).on('success', function(e) {
+        alert("复制成功！！！");
+        e.clearSelection();
+    }).on('error', function(e) {
+        alert('Error!');
+    });
+</script>
+</body>
+</html>

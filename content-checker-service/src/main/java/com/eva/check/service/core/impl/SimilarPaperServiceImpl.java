@@ -35,6 +35,7 @@ public class SimilarPaperServiceImpl implements SimilarPaperService {
     private final PaperSentenceService paperSentenceService;
     private final CheckParagraphService checkParagraphService;
     private final PaperInfoService paperInfoService;
+
     @Override
     public ParagraphResult assembleParagraphResult(String originalParagraph, Double similarity, Long checkParagraphId) {
 
@@ -50,6 +51,8 @@ public class SimilarPaperServiceImpl implements SimilarPaperService {
         // 按照句子进行处理
         Map<Long, SentenceResult> sentenceResultMap = Maps.newHashMap();
         List<CheckSentence> checkSentences = this.checkSentenceService.getByParagraphId(checkParagraphId);
+        int startIndex = 0;
+        StringBuilder newText = new StringBuilder();
         for (CheckSentence checkSentence : checkSentences) {
             if (this.similarTextRule.isNotSimilar(checkSentence.getSimilarity())) {
                 continue;
@@ -65,7 +68,7 @@ public class SimilarPaperServiceImpl implements SimilarPaperService {
             // 循环检测句子对列表，填充好句子对结果的列表
             for (CheckSentencePair checkSentencePair : checkSentencePairList) {
                 SentencePairResult sentencePairResult = new SentencePairResult();
-                sentencePairResult.setFormatSimilarity(NumberUtil.decimalFormat("#.##%",checkSentencePair.getSimilarity()));
+                sentencePairResult.setFormatSimilarity(NumberUtil.decimalFormat("#.##%", checkSentencePair.getSimilarity()));
                 sentencePairResult.setSimilarity(checkSentencePair.getSimilarity());
                 PaperSentence paperSentence = this.paperSentenceService.getById(checkSentencePair.getTargetSentenceId());
                 sentencePairResult.setTargetSentence(paperSentence.getContent());
@@ -89,9 +92,26 @@ public class SimilarPaperServiceImpl implements SimilarPaperService {
                     checkSentence.getSimilarity(),
                     checkSentence.getSentenceId().toString());
             // 将渲染后的句子内容替换原段落内容
-            originalParagraph = originalParagraph.replaceAll(checkSentence.getOriginContent(), renderSentence);
+            //  这里不能直接用replaceAll
+//            originalParagraph = originalParagraph.replaceAll(checkSentence.getOriginContent(), renderSentence);
+
+            // 计算句子所在位置
+            int position = originalParagraph.indexOf(checkSentence.getOriginContent(), startIndex);
+            // 如果子串存在
+            if (position != -1) {
+                // 先直接拼接startIndex与子串之间的字符串
+                newText.append(originalParagraph, startIndex, position);
+                // 拼接渲染后的字符串
+                newText.append(renderSentence);
+                // 更新startIndex，跳过子串长度（已经匹配过的子串不再参与匹配）
+                startIndex = position + checkSentence.getOriginContent().length();
+            }
+
         }
-        paragraphResult.setRenderContent(originalParagraph);
+        // 当所有句子匹配替换结束之后，拼接最后剩余下来的字符串
+        newText.append(originalParagraph, startIndex, originalParagraph.length());
+
+        paragraphResult.setRenderContent(newText.toString());
         paragraphResult.setSimilarSentenceResultMap(sentenceResultMap);
         return paragraphResult;
     }

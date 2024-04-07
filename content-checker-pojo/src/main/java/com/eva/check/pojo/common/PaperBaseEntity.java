@@ -1,5 +1,6 @@
 package com.eva.check.pojo.common;
 
+import com.eva.check.common.constant.ContentCheckConstant;
 import com.eva.check.common.enums.DataSource;
 import com.eva.check.common.enums.DataType;
 import lombok.Data;
@@ -41,7 +42,7 @@ public class PaperBaseEntity extends BaseEntity{
     /**
      * {@link com.eva.check.common.enums.DataSource}
      */
-    private String dataSource = DataSource.INTERNET.getValue();
+    private String dataSource = ContentCheckConstant.DATA_SOURCE_DEFAULT;
 
     @Data
     public static class PaperExtDto {

@@ -17,8 +17,8 @@ public enum DataSource implements IBaseEnum<String> {
     /**
      * 互联网
      */
-    INTERNET("互联网", "1"),
-    GZKJJ("赣州科技局", "2")
+    INTERNET("互联网", "1")/*,
+    GZKJJ("赣州科技局", "2")*/
     ;
 
     private final String name;

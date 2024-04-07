@@ -1,5 +1,6 @@
 package com.eva.check.service.core.impl;
 
+import com.eva.check.common.constant.ContentCheckConstant;
 import com.eva.check.common.enums.DataSource;
 import com.eva.check.common.enums.DataType;
 import com.eva.check.common.enums.PaperErrorCode;
@@ -40,7 +41,7 @@ class PaperCollectServiceImplTest {
         PaperAddReq paperAddReq = new PaperAddReq();
         paperAddReq.setPaperNo(PAPER_NO)
                 .setDataType(DataType.FULL_TEXT.getValue())
-                .setDataSource(DataSource.INTERNET.getValue())
+                .setDataSource(ContentCheckConstant.DATA_SOURCE_DEFAULT)
                 .setAuthor("zzz")
                 .setTitle("Test Title")
                 .setContent(document)
@@ -58,7 +59,7 @@ class PaperCollectServiceImplTest {
         PaperAddReq paperAddReq = new PaperAddReq();
         paperAddReq.setPaperNo(PAPER_NO)
                 .setDataType(DataType.FULL_TEXT.getValue())
-                .setDataSource(DataSource.INTERNET.getValue())
+                .setDataSource(ContentCheckConstant.DATA_SOURCE_DEFAULT)
                 .setAuthor("zzz")
                 .setTitle("Test Title")
                 .setContent(document)

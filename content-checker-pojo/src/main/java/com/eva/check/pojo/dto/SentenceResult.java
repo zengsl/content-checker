@@ -4,6 +4,9 @@ import lombok.Data;
 
 import java.util.List;
 
+/**
+ * @author zengsl
+ */
 @Data
 public
 class SentenceResult {
