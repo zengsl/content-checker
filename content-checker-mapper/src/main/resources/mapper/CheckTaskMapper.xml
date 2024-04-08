@@ -11,6 +11,7 @@
         <result property="checkType" column="check_type" jdbcType="CHAR"/>
         <result property="content" column="content" jdbcType="VARCHAR"/>
         <result property="status" column="status" jdbcType="CHAR"/>
+        <result property="result" column="result" jdbcType="VARCHAR"/>
         <result property="similarity" column="similarity" jdbcType="DOUBLE"/>
         <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
         <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
@@ -18,7 +19,7 @@
 
     <sql id="Base_Column_List">
         task_id,check_id,check_no,
-        check_type,content,status,similarity,
+        check_type,content,status,result,similarity,
         create_time,update_time
     </sql>
 </mapper>

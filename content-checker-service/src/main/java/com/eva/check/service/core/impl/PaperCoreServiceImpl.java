@@ -39,6 +39,7 @@ public class PaperCoreServiceImpl implements PaperCoreService {
     @Override
     public void collectParagraph(PaperParagraph paperParagraph) {
         PaperParagraphDoc paperParagraphDoc = EsDocConverter.INSTANCE.paperParagraph2Doc(paperParagraph);
+        // 文档入库，存入Es
         paperParagraphRepository.save(paperParagraphDoc);
     }
 

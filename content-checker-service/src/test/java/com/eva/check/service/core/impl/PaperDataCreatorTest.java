@@ -1,8 +1,10 @@
 package com.eva.check.service.core.impl;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import com.eva.check.pojo.dto.PaperAddReq;
 import com.eva.check.service.config.ContentCheckAutoConfiguration;
 import com.eva.check.service.core.PaperCollectService;
+import com.eva.check.service.es.repository.PaperParagraphRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -28,6 +30,14 @@ public class PaperDataCreatorTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private  ElasticsearchClient esClient;
+
+    @Autowired
+
+    private PaperParagraphRepository paperParagraphRepository;
+
 
     public static final String INIT_DATA_PATH = "initDataGz";
 
@@ -61,6 +71,7 @@ public class PaperDataCreatorTest {
     void testClearData() {
         this.testClearBaseData();
         this.testClearCheckData();
+        this.testClearEsData();
     }
 
     @Test
@@ -81,5 +92,10 @@ public class PaperDataCreatorTest {
         this.jdbcTemplate.execute("delete from check_paragraph_pair");
         this.jdbcTemplate.execute("delete from check_sentence");
         this.jdbcTemplate.execute("delete from check_sentence_pair");
+    }
+
+    @Test
+    void testClearEsData() {
+        this.paperParagraphRepository.deleteAll();
     }
 }

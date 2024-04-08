@@ -28,8 +28,16 @@
                 <input type="text" class="form-control" id="publishYear" name="publishYear">
             </div>
             <div class="mb-3">
+                <label for="paperNo" class="form-label">文章编号(可以通过文章编号排除同一文档)</label>
+                <input type="text" class="form-control" id="paperNo" name="paperNo">
+            </div>
+            <div class="mb-3">
                 <label for="content" class="form-label">文章内容<span class="required">*</span></label>
                 <textarea class="form-control" id="content" name="content" rows="8" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="needCollect" class="form-label">是否入库</label>
+                <input class="form-check" id="needCollect" name="needCollect" type="checkbox" value="1"/>
             </div>
             <button type="submit" class="btn btn-primary" onclick="submitCheckForm()">提交</button>
         </form>

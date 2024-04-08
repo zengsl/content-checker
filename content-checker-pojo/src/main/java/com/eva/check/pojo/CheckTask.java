@@ -64,6 +64,11 @@ public class CheckTask extends BaseEntity implements Serializable {
     private String status;
 
     /**
+     * 执行结果： 成功或者失败的详细信息
+     */
+    private String result;
+
+    /**
      * 相似度
      */
     private Double similarity;

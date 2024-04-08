@@ -58,8 +58,13 @@ public class ContentCheckController {
                 .setTitle(paperCheckVO.getTitle())
                 .setPublishYear(paperCheckVO.getPublishYear())
         ;
-        //
-        String checkNo = this.paperCheckService.createPaperCheck(paperCheckReq);
+        String checkNo;
+        if (paperCheckVO.getNeedCollect() != null && paperCheckVO.getNeedCollect()) {
+            checkNo = this.paperCheckService.createPaperCheckAndCollect(paperCheckReq);
+        } else {
+            checkNo = this.paperCheckService.createPaperCheck(paperCheckReq);
+
+        }
         return R.ok(checkNo);
     }
 }

@@ -18,4 +18,6 @@ public class PaperCheckVO {
     private String content;
 
     private String publishYear;
+
+    private Boolean needCollect;
 }

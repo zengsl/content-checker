@@ -42,28 +42,43 @@ public class TextUtil {
         return Arrays.stream(paragraphs).filter(StringUtils::isNoneBlank).collect(Collectors.toList());
     }*/
 
-    public static List<String> splitSentence(String document, String sentenceSeparator) {
+    /**
+     * 文章分段之后再拆分句子
+     */
+    @Deprecated
+    public static List<String> splitSentenceFromDoc(String paragraph, String sentenceSeparator) {
         List<String> sentences = Lists.newArrayList();
         String newLineRegex = "[\r\n]";
-        for (String line : document.split(newLineRegex)) {
+
+        for (String line : paragraph.split(newLineRegex)) {
             line = line.trim();
             if (line.isEmpty()) {
                 continue;
             }
-            for (String sent : line.split(sentenceSeparator)) {
-                sent = sent.trim();
-                if (sent.isEmpty()) {
-                    continue;
-                }
-                sentences.add(sent);
+            sentences.addAll(splitSentence(line, sentenceSeparator));
+        }
+
+        return sentences;
+    }
+
+    /**
+     * 拆分句子
+     */
+    public static List<String> splitSentence(String paragraph, String sentenceSeparator) {
+        List<String> sentences = Lists.newArrayList();
+        for (String sent : paragraph.split(sentenceSeparator)) {
+            sent = sent.trim();
+            if (sent.isEmpty()) {
+                continue;
             }
+            sentences.add(sent);
         }
 
         return sentences;
     }
 
     public static List<String> splitSentence(String document) {
-        // TOOD 限制下句子的最小长度？例如：4个字符
+        // TODO 限制下句子的最小长度？例如：4个字符
         return splitSentence(document, DEFAULT_SENTENCE_SEPARATOR);
     }
 

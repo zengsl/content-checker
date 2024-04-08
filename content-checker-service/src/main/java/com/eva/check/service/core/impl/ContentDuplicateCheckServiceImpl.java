@@ -198,7 +198,11 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
                 }
             }
             // 设置每对段落的相似度 ，这里没有统计那些句子对没有相似度的情况
-            checkParagraphPair.setSimilarity(SimilarUtil.formatSimilarity(similarityCounter / checkSentencePairList.size()));
+            if (checkSentencePairList.isEmpty()) {
+                checkParagraphPair.setSimilarity(SimilarUtil.formatSimilarity(0D));
+            } else {
+                checkParagraphPair.setSimilarity(SimilarUtil.formatSimilarity(similarityCounter / checkSentencePairList.size()));
+            }
             checkParagraphPair.setStatus(CheckParagraphPairStatus.DONE.getValue());
             // 按照每一对CheckParagraphPair批量保存CheckSentencePair
             this.checkSentencePairService.saveBatch(checkSentencePairList);
