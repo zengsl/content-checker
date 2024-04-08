@@ -20,6 +20,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * 文本工具类
@@ -33,14 +36,17 @@ public class TextUtil {
     /**
      * 默认句子分隔符
      */
-    final static String DEFAULT_SENTENCE_SEPARATOR = "[，,。:：“”？?！!；;]";
-    /*final static String DEFAULT_PARAGRAPH_SEPARATOR = "[\r\n]";
+    final static String DEFAULT_SENTENCE_SEPARATOR = "[，,。:：？?！!；;～~]";
+    final static int MIN_SENTENCE_LENGTH = 10;
+//    final static String DEFAULT_SENTENCE_SEPARATOR = "[，,。:：“”？?！!；;～~]";
+
+    final static String DEFAULT_PARAGRAPH_SEPARATOR = "[\r\n]";
 
 
     public static List<String> splitParagraph(String document) {
         String[] paragraphs = document.split(DEFAULT_PARAGRAPH_SEPARATOR);
         return Arrays.stream(paragraphs).filter(StringUtils::isNoneBlank).collect(Collectors.toList());
-    }*/
+    }
 
     /**
      * 文章分段之后再拆分句子
@@ -78,8 +84,76 @@ public class TextUtil {
     }
 
     public static List<String> splitSentence(String document) {
-        // TODO 限制下句子的最小长度？例如：4个字符
         return splitSentence(document, DEFAULT_SENTENCE_SEPARATOR);
+    }
+
+    public static List<String> smartSplitSentence(String document) {
+
+        String[] splitSentences = splitSentenceRemainSplitter(document);
+        if (splitSentences.length == 0) {
+            return Lists.newArrayList();
+        }
+        List<String> finalSentences = Lists.newArrayList();
+        // 针对句子长度进行合并处理。
+        StringBuilder waitSentence = new StringBuilder();
+        for (int i = 0; i < splitSentences.length; i++) {
+            String sentence = splitSentences[i];
+            // 满足最小长度则直接添加
+            if (sentence.trim().length() >= MIN_SENTENCE_LENGTH) {
+                if (waitSentence.isEmpty()) {
+                    finalSentences.add(sentence);
+                } else {
+                    waitSentence.append(sentence);
+                    finalSentences.add(waitSentence.toString());
+                    waitSentence.setLength(0);
+                }
+            } else {
+                // 若当前是最后一句，则拼接到上一句后面
+                if (i == (splitSentences.length - 1)) {
+                    int lastIndex = finalSentences.size() - 1;
+                    finalSentences.set(lastIndex, finalSentences.get(lastIndex) + sentence);
+                } else {
+                    waitSentence.append(sentence);
+                }
+            }
+        }
+
+        return finalSentences;
+    }
+
+    public static String[] splitSentenceRemainSplitter(String sentence) {
+        //1. 定义匹配模式
+        Pattern p = Pattern.compile(DEFAULT_SENTENCE_SEPARATOR);
+        Matcher m = p.matcher(sentence);
+
+        //2. 拆分句子[拆分后的句子符号也没了]
+        String[] words = p.split(sentence);
+
+        //3. 保留原来的分隔符
+        if (words.length > 0) {
+            int count = 0;
+            while (count < words.length) {
+                if (m.find()) {
+                    words[count] += m.group();
+                }
+                count++;
+            }
+        }
+        return words;
+    }
+
+    public static void main(String[] args) {
+        String sentence = "很抱歉打扰到您了，祝您生活愉快，再见。";
+
+        List<String> strings = TextUtil.smartSplitSentence(sentence);
+        System.out.println(strings);
+
+        /*StringBuilder x = new StringBuilder();
+        x.append("sfjlajslkdfjlkajskldjflajslkdjflajsldfAAAAA");
+        System.out.println(x);
+        x.setLength(0);
+        x.append("112");
+        System.out.println(x);*/
     }
 
     public static String clearSpecialCharacters(String text) {
@@ -114,6 +188,8 @@ public class TextUtil {
         text = Convert.toDBC(text);
         // 归一化处理：编码
         text = StrUtil.normalize(text);
+        // 去除尾部标点符号
+        text = text.replaceFirst("[\\pP‘’“”]$", "");
         return text;
     }
 

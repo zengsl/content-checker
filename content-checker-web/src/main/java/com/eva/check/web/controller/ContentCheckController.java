@@ -43,6 +43,9 @@ public class ContentCheckController {
     @ResponseBody
     public R<CheckRequest> getCheckResult(@NotBlank String checkNo) {
         CheckRequest paperCheckResult = this.paperCheckService.getPaperCheckResult(checkNo);
+        if (paperCheckResult == null) {
+            return R.ok();
+        }
         paperCheckResult.setCheckId(null);
         return R.ok(paperCheckResult);
     }
@@ -53,17 +56,15 @@ public class ContentCheckController {
         PaperCheckReq paperCheckReq = new PaperCheckReq();
         paperCheckReq.setReqSource(CheckReqSource.WEB.getValue())
                 .setContent(paperCheckVO.getContent())
-//                .setPaperNo("test:9")
+                .setPaperNo(paperCheckVO.getPageNo())
                 .setAuthor(paperCheckVO.getAuthor())
                 .setTitle(paperCheckVO.getTitle())
-                .setPublishYear(paperCheckVO.getPublishYear())
-        ;
+                .setPublishYear(paperCheckVO.getPublishYear());
         String checkNo;
         if (paperCheckVO.getNeedCollect() != null && paperCheckVO.getNeedCollect()) {
             checkNo = this.paperCheckService.createPaperCheckAndCollect(paperCheckReq);
         } else {
             checkNo = this.paperCheckService.createPaperCheck(paperCheckReq);
-
         }
         return R.ok(checkNo);
     }

@@ -71,7 +71,7 @@ public class PaperCheckServiceImpl implements PaperCheckService {
     @Override
     public String createPaperCheck(PaperCheckReq paperCheckReq) throws SystemException {
         checkParams(paperCheckReq);
-        // 拆解验证任务 先只处理正文检测
+        // 拆解验证任务 先只处理正文检测 TODO
         CheckRequest checkRequest = PaperCheckConverter.INSTANCE.paperCheckReq2CheckReq(paperCheckReq);
         String checkNo = StringUtils.hasText(paperCheckReq.getCheckNo()) ? paperCheckReq.getCheckNo() : NanoId.randomNanoId();
         // 设置checkNo
@@ -108,7 +108,7 @@ public class PaperCheckServiceImpl implements PaperCheckService {
         checkRequest.setTaskNum(checkTaskList.size());
         checkRequest.setStatus(CheckReqStatus.DOING.getValue());
         this.checkRequestService.updateById(checkRequest);
-        // 将任务推送MQ 进行异步处理
+        // 将任务推送MQ 进行异步处理 TODO
         CheckTaskStartEvent checkTaskStartEvent = CheckTaskStartEvent.builder()
                 .checkTasks(checkTaskList)
                 .checkId(checkRequest.getCheckId())
@@ -128,10 +128,16 @@ public class PaperCheckServiceImpl implements PaperCheckService {
     @Override
     public String createPaperCheckAndCollect(PaperCheckReq paperCheckReq) throws SystemException {
         PaperAddReq paperAddReq = PaperCollectConverter.INSTANCE.check2AddReq(paperCheckReq);
+
+        // 生成论文编号
+        String paperNo = StringUtils.hasText(paperAddReq.getPaperNo()) ? paperAddReq.getPaperNo() : NanoId.randomNanoId();
+        // 入库前设置编号
+        paperAddReq.setPaperNo(paperNo);
         // 收录至文档库
         // TODO 可以异步
         paperCollectService.addNewPaper(paperAddReq);
-
+        // 检测前设置编号，以防检测时进行同一文件检测
+        paperCheckReq.setPaperNo(paperNo);
         return this.createPaperCheck(paperCheckReq);
     }
 

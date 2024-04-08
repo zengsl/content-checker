@@ -43,8 +43,7 @@ public class ContentCollectController {
                 .setAuthor(paperCollectVO.getAuthor())
                 .setTitle(paperCollectVO.getTitle())
                 .setContent(paperCollectVO.getContent())
-                .setPublishYear(paperCollectVO.getPublishYear())
-        ;
+                .setPublishYear(paperCollectVO.getPublishYear());
         String paperNo = paperCollectService.addNewPaper(paperAddReq);
         return R.ok(paperNo);
     }

@@ -45,6 +45,7 @@ public class ContentDuplicateCheckPrepareServiceImpl implements DuplicateCheckPr
     public void setSendMqService(SendMqService sendMqService) {
         this.sendMqService = sendMqService;
     }
+
     @Override
     public void execute(CheckTask checkTask) {
         if (checkTask == null) {
@@ -59,7 +60,6 @@ public class ContentDuplicateCheckPrepareServiceImpl implements DuplicateCheckPr
         }
         // 生成检测文本的指纹信息
         SimHashUtil.SimHash simHash = ParagraphUtil.buildFingerprint2(checkTask.getContent());
-//        SimHashUtil.SimHash simHash = ParagraphUtil.buildFingerprint(checkTask.getContent());
         // 生成检测段落
         CheckParagraph checkParagraph = CheckParagraph.builder()
                 .paperNo(checkTask.getPaperNo())
@@ -75,7 +75,7 @@ public class ContentDuplicateCheckPrepareServiceImpl implements DuplicateCheckPr
                 .build();
         this.checkParagraphService.save(checkParagraph);
         // 生成句子
-        List<String> sentenceList = TextUtil.splitSentence(checkTask.getContent());
+        List<String> sentenceList = TextUtil.smartSplitSentence(checkTask.getContent());
         List<CheckSentence> checkSentenceList = Lists.newArrayListWithCapacity(sentenceList.size());
         for (int i = 0; i < sentenceList.size(); i++) {
             String sentence = sentenceList.get(i);

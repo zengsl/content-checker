@@ -207,14 +207,8 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
             // 按照每一对CheckParagraphPair批量保存CheckSentencePair
             this.checkSentencePairService.saveBatch(checkSentencePairList);
         }
-
         // 汇总段落检测对的结果
         this.checkParagraphPairService.updateBatchById(checkParagraphPairList);
-
-        // 汇总句子的检测结果
-
-        // 汇总段落的检测结果
-
         // 发送结果汇总事件。
         CollectResultEvent event = CollectResultEvent.builder()
                 .checkTask(checkTask)

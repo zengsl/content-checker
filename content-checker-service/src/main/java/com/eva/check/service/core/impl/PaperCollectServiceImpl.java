@@ -101,7 +101,7 @@ public class PaperCollectServiceImpl implements PaperCollectService {
         String paragraphContent = paperInfo.getContent();
         // 如果 paragraphContent 长度大与X 则开始分句
         // 【生成句子】
-        List<String> sentenceList = TextUtil.splitSentence(paragraphContent);
+        List<String> sentenceList = TextUtil.smartSplitSentence(paragraphContent);
         AtomicLong num = new AtomicLong();
         sentenceList.forEach(sentence -> {
             // 文本处理 + 分词

@@ -17,6 +17,8 @@ public class PaperCheckVO {
 
     private String content;
 
+    private String pageNo;
+
     private String publishYear;
 
     private Boolean needCollect;

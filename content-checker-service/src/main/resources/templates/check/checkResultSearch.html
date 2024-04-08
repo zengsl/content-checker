@@ -114,8 +114,13 @@
             axios.get("/check/getCheckResult", {params: {checkNo}}).then((response) => {
                 if (response.data.code === 200) {
                     alert("检测请求已提交");
-                    clearTable()
-                    addRow(response.data.data)
+                    if (response.data.data) {
+                        clearTable();
+                        addRow(response.data.data)
+                    } else {
+                        alert("未找到数据");
+                    }
+
                 } else {
                     alert("查询失败");
                     console.error(response.data)

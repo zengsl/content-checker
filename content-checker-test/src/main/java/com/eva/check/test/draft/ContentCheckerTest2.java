@@ -2,7 +2,6 @@ package com.eva.check.test.draft;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
-import com.eva.check.common.util.SimHashOld;
 import com.eva.check.common.util.SimHashUtil;
 import com.eva.check.common.util.StopWordRemover;
 import com.hankcs.hanlp.HanLP;
@@ -141,13 +140,13 @@ calSimilar:75.0
 
 
 
-        SimHashOld simhashObj = new SimHashOld();
+      /*  SimHashOld simhashObj = new SimHashOld();
         long simhash3 = simhashObj.hash(sourceKeywordList3);
         long simhash4 = simhashObj.hash(targetKeywordList3);
 
         System.out.println("simhash3:" + simhash3);
         System.out.println("simhash4:" + simhash4);
-        System.out.println("calSimilar:" + calSimHahSimilar(simhash3, simhash4));
+        System.out.println("calSimilar:" + calSimHahSimilar(simhash3, simhash4));*/
 
     }
 

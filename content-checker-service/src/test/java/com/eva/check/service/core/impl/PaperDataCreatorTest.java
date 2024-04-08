@@ -39,7 +39,14 @@ public class PaperDataCreatorTest {
     private PaperParagraphRepository paperParagraphRepository;
 
 
-    public static final String INIT_DATA_PATH = "initDataGz";
+    public static final String INIT_DATA_PATH = "initDataWx";
+
+
+    @Test
+    void reset() throws IOException, URISyntaxException {
+        testClearData();
+        testInitData();
+    }
 
     @Test
     void testInitData() throws IOException, URISyntaxException {

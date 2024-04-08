@@ -4,6 +4,7 @@ import com.eva.check.pojo.dto.PaperResult;
 import com.eva.check.pojo.dto.ParagraphResult;
 import com.eva.check.pojo.dto.SentenceResult;
 import com.eva.check.pojo.vo.ReportDetailParagraphVO;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
@@ -27,6 +28,9 @@ public interface ReportConverter {
         }
         Map<Long, SentenceResult> similarSentenceResultMap = Maps.newHashMap();
         paperResult.getParagraphResultList().forEach(e ->{
+            if (e.getSimilarSentenceResultMap() == null || e.getSimilarSentenceResultMap().isEmpty()) {
+                return;
+            }
             similarSentenceResultMap.putAll(e.getSimilarSentenceResultMap());
         });
         return similarSentenceResultMap;
