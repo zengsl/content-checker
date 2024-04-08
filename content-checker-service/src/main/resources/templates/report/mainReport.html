@@ -44,10 +44,16 @@
                 <!--<ul class="me-5" style="list-style: none;">
                     <li> 总字数：xxxx</li>
                 </ul>-->
-                <div>总体相似度:<span th:text="${finalSimilarity}"/>
-                    <div class="progress" role="progressbar" aria-label="Example with label" aria-valuenow="25"
-                         aria-valuemin="0" aria-valuemax="100">
-                        <div class="progress-bar" th:style="'width:'+${finalSimilarity}"><!--[[${finalSimilarity}]]--></div>
+                <div>
+                    <div class="mb-1">
+                        <p>相似度计算公式</p>
+                        <p>（句子1相似度+句子2相似度+...+句子n相似度）/ n</p>
+                    </div>
+                    <div>总体相似度:<span th:text="${finalSimilarity}"/>
+                        <div class="progress w-50" role="progressbar" aria-label="Example with label" aria-valuenow="25"
+                             aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar" th:style="'width:'+${finalSimilarity}"><!--[[${finalSimilarity}]]--></div>
+                        </div>
                     </div>
                 </div>
 

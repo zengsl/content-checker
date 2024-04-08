@@ -71,7 +71,7 @@ public class SimilarPaperServiceImpl implements SimilarPaperService {
                 sentencePairResult.setFormatSimilarity(NumberUtil.decimalFormat("#.##%", checkSentencePair.getSimilarity()));
                 sentencePairResult.setSimilarity(checkSentencePair.getSimilarity());
                 PaperSentence paperSentence = this.paperSentenceService.getById(checkSentencePair.getTargetSentenceId());
-                sentencePairResult.setTargetSentence(paperSentence.getContent());
+                sentencePairResult.setTargetSentence(paperSentence.getOriginContent());
                 // 计算句子对的相似度所对应的颜色
                 sentencePairResult.setCssClassName(this.similarTextRule.computeTextColor(checkSentencePair.getSimilarity()).getCssClass());
                 // 拼装论文基本信息
