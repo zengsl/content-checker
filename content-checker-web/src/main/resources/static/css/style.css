@@ -27,12 +27,12 @@
     width: 100%;*/
 }
 
-.paper-result-nav  a {
+.paper-result-nav a {
     text-decoration: none;
     color: #e6e6e6 !important;
 }
 
-.paper-result-nav  a:hover {
+.paper-result-nav a:hover {
     opacity: 0.5
 }
 
@@ -244,4 +244,14 @@ p {
 
 a {
     text-decoration: none;
+}
+
+
+.paper-composite-result-container {
+    padding: 20px 40px;
+    background-color: #e7e7e7
+}
+
+.paper-composite-result-container .composite-container {
+    background: #fff;
 }
