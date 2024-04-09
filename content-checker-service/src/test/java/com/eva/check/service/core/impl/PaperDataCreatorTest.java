@@ -99,6 +99,8 @@ public class PaperDataCreatorTest {
         this.jdbcTemplate.execute("delete from check_paragraph_pair");
         this.jdbcTemplate.execute("delete from check_sentence");
         this.jdbcTemplate.execute("delete from check_sentence_pair");
+        this.jdbcTemplate.execute("delete from check_paper");
+        this.jdbcTemplate.execute("delete from check_paper_pair");
     }
 
     @Test

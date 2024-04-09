@@ -2,6 +2,7 @@ package com.eva.check.service.core.impl;
 
 import com.eva.check.common.enums.TextColor;
 import com.eva.check.service.core.SimilarTextRule;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
@@ -11,6 +12,7 @@ import java.math.BigDecimal;
  * @author zzz
  * @date 2023/11/27 21:40
  */
+@Service
 public class DefaultSimilarTextRuleImpl implements SimilarTextRule {
 
     @Override

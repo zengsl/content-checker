@@ -44,6 +44,9 @@ public class CheckReportController {
     public ModelAndView view(@NotBlank @PathVariable String checkNo) {
 
         Map<String, Object> params = this.paperCheckService.getPaperCheckReportParams(checkNo);
+        if (params == null || params.isEmpty()) {
+            return new ModelAndView("report/404");
+        }
         params.put("isDownload", false);
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.addAllObjects(params);

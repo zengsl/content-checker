@@ -11,11 +11,20 @@ import lombok.Data;
 @Data
 public class SimilarPaperVO {
 
-    private String title;
+    private Long checkPaperId;
 
-    private String author;
+    private Long targetPaperId;
 
-    private String content;
+    private String targetTitle;
 
-    private String publishYear;
+    private String targetAuthor;
+
+    private String targetContent;
+
+    private String targetPublishYear;
+
+    private Double similarity;
+    private String formatSimilarity;
+
+    private String cssClassName;
 }

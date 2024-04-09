@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.eva.check.mapper.CheckPaperMapper">
+
+    <resultMap id="BaseResultMap" type="com.eva.check.pojo.CheckPaper">
+            <id property="paperId" column="paper_id" jdbcType="BIGINT"/>
+            <result property="paperNo" column="paper_no" jdbcType="VARCHAR"/>
+            <result property="taskId" column="task_id" jdbcType="BIGINT"/>
+            <result property="checkId" column="check_id" jdbcType="BIGINT"/>
+            <result property="title" column="title" jdbcType="VARCHAR"/>
+            <result property="content" column="content" jdbcType="VARCHAR"/>
+            <result property="similarity" column="similarity" jdbcType="DOUBLE"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        paper_id,paper_no,task_id,
+        check_id,title,content,
+        similarity,create_time,update_time
+    </sql>
+</mapper>

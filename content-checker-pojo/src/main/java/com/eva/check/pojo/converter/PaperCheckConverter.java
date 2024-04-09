@@ -1,5 +1,6 @@
 package com.eva.check.pojo.converter;
 
+import com.eva.check.pojo.CheckPaper;
 import com.eva.check.pojo.CheckRequest;
 import com.eva.check.pojo.dto.PaperCheckReq;
 import org.mapstruct.Mapper;
@@ -29,4 +30,6 @@ public interface PaperCheckConverter {
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "similarity", ignore = true)
     CheckRequest paperCheckReq2CheckReq(PaperCheckReq paperCheckReq);
+
+    CheckPaper paperCheckReq2CheckPaper(PaperCheckReq paperCheckReq);
 }

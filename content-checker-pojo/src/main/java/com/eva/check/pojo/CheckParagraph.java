@@ -45,7 +45,15 @@ public class CheckParagraph extends BaseEntity implements Serializable {
      */
     private Long checkId;
 
+    /**
+     * 编号
+     */
     private String paperNo;
+
+    /**
+     * 论文主键
+     */
+    private Long paperId;
 
     /**
      * 文本内容

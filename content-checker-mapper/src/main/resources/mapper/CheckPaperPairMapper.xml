@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.eva.check.mapper.CheckPaperPairMapper">
+
+    <resultMap id="BaseResultMap" type="com.eva.check.pojo.CheckPaperPair">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="taskId" column="task_id" jdbcType="BIGINT"/>
+            <result property="checkPaperId" column="check_paper_id" jdbcType="BIGINT"/>
+            <result property="targetPaperId" column="target_paper_id" jdbcType="BIGINT"/>
+            <result property="similarity" column="similarity" jdbcType="DOUBLE"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,task_id,check_paper_id,
+        target_paper_id,similarity,create_time,
+        update_time
+    </sql>
+
+    <select id="getSimilarityPapers" resultType="com.eva.check.pojo.vo.SimilarPaperVO" parameterType="long">
+        select t.check_paper_id as checkPaperId,
+               t.target_paper_id as targetPaperId,
+               pi.title as targetTitle,
+               pi.author as targetAuthor,
+               pi.content as targetContent,
+               pi.publish_year as targetPublishYear,
+               t.similarity as similarity
+        from check_paper_pair t
+                 left join paper_info pi on pi.paper_id = t.target_paper_id
+        where t.check_paper_id = #{checkPaperId} and t.similarity > 0
+        order by t.similarity desc
+
+    </select>
+</mapper>

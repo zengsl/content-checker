@@ -27,7 +27,8 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class SimilarPaperServiceImpl implements SimilarPaperService {
-    private final SimilarTextRule similarTextRule = new DefaultSimilarTextRuleImpl();
+
+    private final SimilarTextRule similarTextRule;
 
     private final SimilarTextRender similarTextRender;
     private final CheckSentenceService checkSentenceService;

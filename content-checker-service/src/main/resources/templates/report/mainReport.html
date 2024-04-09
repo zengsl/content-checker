@@ -133,7 +133,26 @@
 
     <div class="row paper-composite-result-container" id="composite-tab-pane" style="display: none;">
         <div class="paper-result-container composite-container">
-            所有相似资源
+            <h4>所有相似资源</h4>
+            <ol class="list-group list-group-numbered">
+                <li class="list-group-item" th:each="similarPaper:${allSimilarPaperList}">
+                    <div class="d-flex justify-content-start align-items-center">
+                        <div class="d-flex justify-content-start align-items-center w-25">相似度：<span class="sentence-pair-similarity " th:classappend="${similarPaper.cssClassName}" th:text="${similarPaper.formatSimilarity}"></span>
+                            <div class="progress mx-lg-1"  style="width: 100px" role="progressbar" aria-label="Example with label"
+                                 aria-valuenow="25"
+                                 aria-valuemin="0" aria-valuemax="100">
+                                <div class="progress-bar" th:style="'width:'+${similarPaper.formatSimilarity}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="me-lg-5"><span class="strong">作者：</span><span th:text="${similarPaper.targetAuthor}"></span>
+                        </div>
+                        <div class="me-lg-5"><span class="strong">标题：</span><span th:text="${similarPaper.targetTitle}"></span></div>
+                    </div>
+                </li>
+
+            </ol>
         </div>
     </div>
 

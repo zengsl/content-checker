@@ -2,6 +2,7 @@ package com.eva.check.service.core.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import com.eva.check.common.constant.ContentCheckConstant;
 import com.eva.check.common.enums.CheckParagraphPairStatus;
 import com.eva.check.common.enums.CheckSentencePairStatus;
 import com.eva.check.common.enums.CheckSentenceStatus;
@@ -21,6 +22,7 @@ import com.eva.check.service.mq.producer.SendMqService;
 import com.eva.check.service.support.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 内容重复检查服务
@@ -46,11 +49,12 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
     private final PaperCoreService paperCoreService;
     private final PaperSentenceService paperSentenceService;
     private final PaperTokenService tokenService;
-    private final CheckTaskService checkTaskService;
     private final CheckSentenceService checkSentenceService;
     private final CheckSentencePairService checkSentencePairService;
     private final CheckParagraphService checkParagraphService;
     private final CheckParagraphPairService checkParagraphPairService;
+    private final CheckPaperService checkPaperService;
+    private final CheckPaperPairService checkPaperPairService;
     private final CheckProperties checkProperties;
 
     private SendMqService sendMqService;
@@ -64,6 +68,9 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
         this.sendMqService = sendMqService;
     }
 
+    /**
+     * 快速查找疑似项目，生成待比对数据对
+     */
     @Override
     public void findSimilarParagraph(CheckTask checkTask) {
         if (!DataType.FULL_TEXT.getValue().equals(checkTask.getCheckType())) {
@@ -80,8 +87,8 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
             return;
         }
 
-        // 通过simHash快速判断是否重复，获取重复论文列表
         List<CheckParagraphPair> checkParagraphListPair = Lists.newArrayListWithCapacity(16);
+        /*Set<Long> similarPaperSet = Sets.newHashSet();*/
         checkParagraphList.forEach(checkParagraph -> {
             PaperParagraph paperParagraph = PaperParagraph.builder().paperNo(checkParagraph.getPaperNo())
                     .content(checkParagraph.getContent())
@@ -91,10 +98,10 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
                     .hash3(checkParagraph.getHash3())
                     .hash4(checkParagraph.getHash4())
                     .build();
-
+            // 快速判断是否重复，获取重复论文列表
             List<SimilarPaperParagraph> similarPaperList = this.paperCoreService.findSimilarPaperParagraph(paperParagraph);
-            // TODO 目前这种方法无法快速查找的可能相似的文档
-//            List<SimilarPaperParagraph> similarPaperList = this.paperSimHashIndexService.findSimilarPaper(paperParagraph);
+            // 目前SimHash这种方法无法快速查找的可能相似的文档
+            // List<SimilarPaperParagraph> similarPaperList = this.paperSimHashIndexService.findSimilarPaper(paperParagraph);
             if (CollUtil.isEmpty(similarPaperList)) {
                 return;
             }
@@ -102,23 +109,41 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
             similarPaperList.forEach(e -> {
                 CheckParagraphPair list = CheckParagraphPair.builder()
                         .taskId(checkTask.getTaskId())
+                        .checkPaperId(checkParagraph.getPaperId())
+                        .targetPaperId(e.getPaperId())
                         .checkParaId(checkParagraph.getParagraphId())
                         .targetParaId(e.getParagraphId())
                         .status(CheckParagraphPairStatus.INIT.getValue())
-                        .similarity(-1D)
+                        .similarity(ContentCheckConstant.SIMILARITY_INIT)
                         .build();
                 checkParagraphListPair.add(list);
+                // 收集所有相似论文ID
+                /* similarPaperSet.add(e.getPaperId());*/
             });
         });
 
         // 查找相似论文
         if (CollectionUtil.isEmpty(checkParagraphListPair)) {
             // 如果没有相似论文，则直接结束当前任务并设置相似度为0
-            checkTask.setSimilarity(0D);
+            checkTask.setSimilarity(ContentCheckConstant.SIMILARITY_ZERO);
             CheckTaskFinishEvent checkTaskFinishEvent = CheckTaskFinishEvent.builder().checkTask(checkTask).build();
             this.sendMqService.finishTask(checkTaskFinishEvent);
         } else {
-            // 生成比对文本对
+            // 暂时不提前生成check_paper_pair，待最终结果计算出来之后再新增。否则，到时还需通过update去设置similarity
+            // 生成比对论文对 check_paper_pair
+            /*List<CheckPaperPair> checkPaperListPair = Lists.newArrayListWithCapacity(16);
+            similarPaperSet.forEach(id -> {
+                CheckPaperPair checkPaperPair = CheckPaperPair.builder()
+                        .taskId(checkTask.getTaskId())
+                        .checkPaperId(checkTask.getPaperId())
+                        .targetPaperId(id)
+                        .similarity(ContentCheckConstant.SIMILARITY_INIT)
+                        .build();
+                checkPaperListPair.add(checkPaperPair);
+            });
+            this.checkPaperPairService.initCompareList(checkPaperListPair);*/
+
+            // 生成比对段落对 check_paragraph_pair
             this.checkParagraphPairService.initCompareList(checkParagraphListPair);
             // 触发比对事件事件
             CheckParagraphEvent checkParagraphEvent = CheckParagraphEvent.builder()
@@ -128,9 +153,28 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
         }
     }
 
+    @Data
+    static
+    class CheckPaperResult {
+        private Long checkPaperId;
+        private Long targetPaperId;
+        private Integer paragraphCount;
+        private Double similarCount;
 
+        public CheckPaperResult(Long checkPaperId, Long targetPaperId, Integer paragraphCount, Double similarCount) {
+            this.checkPaperId = checkPaperId;
+            this.targetPaperId = targetPaperId;
+            this.paragraphCount = paragraphCount;
+            this.similarCount = similarCount;
+        }
+    }
+
+    /**
+     * 以段落为单元，执行检测
+     */
     @Override
     public void doPragraphCheck(CheckTask checkTask) {
+        Map<Long, CheckPaperResult> checkPaperResultMap = Maps.newHashMap();
         // TODO 这里的校验可以用多线程进行
         List<CheckParagraphPair> checkParagraphPairList = this.checkParagraphPairService.getByTaskId(checkTask.getTaskId());
         // 遍历每一对需要比较的段落
@@ -197,16 +241,44 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
                     checkSentencePairList.add(checkSentencePair);
                 }
             }
-            // 设置每对段落的相似度 ，这里没有统计那些句子对没有相似度的情况
+            // 设置每对段落的相似度，这里没有统计那些句子对没有相似度的情况
             if (checkSentencePairList.isEmpty()) {
-                checkParagraphPair.setSimilarity(SimilarUtil.formatSimilarity(0D));
+                checkParagraphPair.setSimilarity(SimilarUtil.formatSimilarity(ContentCheckConstant.SIMILARITY_ZERO));
             } else {
                 checkParagraphPair.setSimilarity(SimilarUtil.formatSimilarity(similarityCounter / checkSentencePairList.size()));
             }
             checkParagraphPair.setStatus(CheckParagraphPairStatus.DONE.getValue());
             // 按照每一对CheckParagraphPair批量保存CheckSentencePair
             this.checkSentencePairService.saveBatch(checkSentencePairList);
+
+            // 统计以paper_pair为单位的相似度数据
+            CheckPaperResult checkPaperResult = checkPaperResultMap.computeIfAbsent(checkParagraphPair.getTargetPaperId(), k -> new CheckPaperResult(checkTask.getPaperId(), checkParagraphPair.getTargetPaperId(), 0, 0D));
+            checkPaperResult.setParagraphCount(checkPaperResult.getParagraphCount() + 1);
+            checkPaperResult.setSimilarCount(checkPaperResult.getSimilarCount() + checkParagraphPair.getSimilarity());
         }
+
+        // 汇总paper_pair的结果
+        if (!checkPaperResultMap.isEmpty()) {
+            AtomicReference<Double> paperSimilarityCounter = new AtomicReference<>(0D);
+            List<CheckPaperPair> checkPaperListPair = Lists.newArrayListWithCapacity(16);
+            checkPaperResultMap.forEach(((aLong, checkPaperResult) -> {
+                double paperSimilarity = checkPaperResult.getSimilarCount() / checkPaperResult.getParagraphCount();
+                CheckPaperPair checkPaperPair = CheckPaperPair.builder().targetPaperId(checkPaperResult.getTargetPaperId())
+                        .checkPaperId(checkPaperResult.getCheckPaperId()).taskId(checkTask.getTaskId())
+                        // 计算相似度
+                        .similarity(SimilarUtil.formatSimilarity(paperSimilarity))
+                        .build();
+                checkPaperListPair.add(checkPaperPair);
+                paperSimilarityCounter.updateAndGet(v -> v + paperSimilarity);
+            }));
+            this.checkPaperPairService.initCompareList(checkPaperListPair);
+
+            // 更新check_paper
+            this.checkPaperService.updateSimilarity(checkTask.getPaperId()
+                    , SimilarUtil.formatSimilarity(paperSimilarityCounter.get() / checkPaperResultMap.size()));
+        }
+
+
         // 汇总段落检测对的结果
         this.checkParagraphPairService.updateBatchById(checkParagraphPairList);
         // 发送结果汇总事件。
@@ -229,8 +301,10 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
         List<CheckSentence> allCheckSentenceList = Lists.newArrayList();
         List<CheckParagraph> checkParagraphList = this.checkParagraphService.getByTaskId(checkTask.getTaskId());
         double paragraphSimilarityCounter = 0D;
+        // 遍历检测段落
         for (CheckParagraph checkParagraph : checkParagraphList) {
-            // 按照段落查找所有检测的句子
+
+            // 根据当前段落，查找所有检测的句子
             List<CheckSentence> checkSentenceList = this.checkSentenceService.getByParagraphId(checkParagraph.getParagraphId());
             if (CollUtil.isEmpty(checkSentenceList)) {
                 finishCheckParagraph(checkParagraph, 0D);
@@ -238,14 +312,16 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
                 continue;
             }
             double sentenceSimilarityCounter = 0D;
+            // 遍历检测句子
             for (CheckSentence checkSentence : checkSentenceList) {
-                // 查找每个句子的检测对
+                // 查找每个句子的检测对（当前句子与疑似句子）
                 List<CheckSentencePair> checkSentencePairList = this.checkSentencePairService.getAllByCheckSentenceId(checkSentence.getSentenceId());
                 if (CollUtil.isEmpty(checkSentencePairList)) {
                     finishCheckSentence(checkSentence, 0D);
                     log.debug("checkSentencePairList is empty, CheckSentenceId: {}", checkSentence.getSentenceId());
                     continue;
                 }
+                // 所有疑似句子的算术平均数作为当前句子的相似度
                 double sentenceSimilarity = SimilarUtil.formatSimilarity(checkSentencePairList.stream().mapToDouble(CheckSentencePair::getSimilarity).sum() / checkSentencePairList.size());
                 finishCheckSentence(checkSentence, sentenceSimilarity);
                 // 累加每个句子的相似度
@@ -255,8 +331,12 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
             allCheckSentenceList.addAll(checkSentenceList);
             // 设置段落的相似度,并将结果设置为结束
             finishCheckParagraph(checkParagraph, SimilarUtil.formatSimilarity(sentenceSimilarityCounter / checkSentenceList.size()));
-            // 统计所有段落的相似度综合
+            // 统计所有段落的综合相似度
             paragraphSimilarityCounter += checkParagraph.getSimilarity();
+
+            // 计算每段文本与单一疑似段落的相似度结果 生成check_paper_pair
+
+
         }
 
         // 批量更新【检测句子】的结果
@@ -270,7 +350,6 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
                 .checkTask(checkTask)
                 .build();
         this.sendMqService.finishTask(checkTaskFinishEvent);
-//        this.checkTaskService.finishTask(checkTask);
     }
 
 

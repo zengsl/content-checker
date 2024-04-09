@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="https://www.thymeleaf.org/">
+<head>
+    <meta charset="UTF-8">
+    <title>检测报告</title>
+    <link th:if="${isDownload}" href="css/bootstrap.min.css" rel="stylesheet" type="text/css" media="all"/>
+    <link th:unless="${isDownload}" th:href="@{/css/bootstrap.min.css}" rel="stylesheet" type="text/css" media="all"/>
+
+    <!-- <link th:if="${isDownload}"     href="css/bootstrap-table.min.css" rel="stylesheet" type="text/css" media="all"/>
+     <link th:unless="${isDownload}" th:href="@{/css/bootstrap-table.min.css}" rel="stylesheet" type="text/css" media="all"/>-->
+
+
+    <link th:if="${isDownload}" href="css/style.css" rel="stylesheet" type="text/css" media="all"/>
+    <link th:unless="${isDownload}" th:href="@{/css/style.css}" rel="stylesheet" type="text/css" media="all"/>
+
+</head>
+<body class="vh-100">
+<div class="container-fluid">
+
+    检测报告不存在!!!!
+
+</div>
+</body>
+</html>

@@ -13,16 +13,17 @@ import java.io.Serial;
 import java.io.Serializable;
 
 /**
- * 验证段落列表
+ * 验证文章列表
  *
  * @author zzz
- * @date 2023/11/25 16:12
+ * @date 2024/04/09
  */
 @EqualsAndHashCode(callSuper = true)
-@TableName(value = "check_paragraph_pair")
+@TableName(value = "check_paper_pair")
 @Data
 @Builder
-public class CheckParagraphPair extends BaseEntity implements Serializable {
+public class CheckPaperPair  extends BaseEntity implements Serializable  {
+
     /**
      * 主键
      */
@@ -45,24 +46,9 @@ public class CheckParagraphPair extends BaseEntity implements Serializable {
     private Long targetPaperId;
 
     /**
-     * 验证段落主键
-     */
-    private Long checkParaId;
-
-    /**
-     * 疑似段落主键
-     */
-    private Long targetParaId;
-
-    /**
      * 相似度
      */
     private Double similarity;
-
-    /**
-     * 状态: 0 待处理,  1 处理中， 2 已完成 3 失败
-     */
-    private String status;
 
     @Serial
     @TableField(exist = false)

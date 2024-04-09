@@ -14,4 +14,7 @@ public interface ContentCheckConstant {
      * 数据来源默认值：互联网
      */
     String DATA_SOURCE_DEFAULT = "1";
+
+    Double SIMILARITY_ZERO = 0D;
+    Double SIMILARITY_INIT = -1D;
 }

@@ -49,6 +49,11 @@ public class CheckTask extends BaseEntity implements Serializable {
     private String paperNo;
 
     /**
+     * 论文主键
+     */
+    private Long paperId;
+
+    /**
      * 验证类型: 1 内容 2 title
      */
     private String checkType;

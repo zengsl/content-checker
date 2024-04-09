@@ -60,6 +60,7 @@ public class DefaultCheckTaskExecutorImpl implements CheckTaskExecutor {
     }
 
     private void updateCheckRequest(CheckTask checkTask) {
+        // 分布式部署的话需要考虑并发问题
         AtomicInteger atomicInteger = checkTaskCountMap.computeIfAbsent(checkTask.getCheckId(), id -> new AtomicInteger(0));        ;
         // 已完成任务数 +1
         int finishedTask = atomicInteger.addAndGet(1);

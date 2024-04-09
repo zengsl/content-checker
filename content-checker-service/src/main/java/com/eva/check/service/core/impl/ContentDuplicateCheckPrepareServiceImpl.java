@@ -63,6 +63,7 @@ public class ContentDuplicateCheckPrepareServiceImpl implements DuplicateCheckPr
         // 生成检测段落
         CheckParagraph checkParagraph = CheckParagraph.builder()
                 .paperNo(checkTask.getPaperNo())
+                .paperId(checkTask.getPaperId())
                 .paragraphNum(1)
                 .checkId(checkTask.getCheckId())
                 .taskId(checkTask.getTaskId())

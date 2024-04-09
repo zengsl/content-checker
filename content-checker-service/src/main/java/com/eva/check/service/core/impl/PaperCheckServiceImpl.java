@@ -9,6 +9,7 @@ import cn.hutool.core.util.ZipUtil;
 import com.eva.check.common.enums.*;
 import com.eva.check.common.exception.SystemException;
 import com.eva.check.common.util.FileUtil;
+import com.eva.check.pojo.CheckPaper;
 import com.eva.check.pojo.CheckReport;
 import com.eva.check.pojo.CheckRequest;
 import com.eva.check.pojo.CheckTask;
@@ -19,12 +20,14 @@ import com.eva.check.pojo.dto.CheckReportDTO;
 import com.eva.check.pojo.dto.PaperAddReq;
 import com.eva.check.pojo.dto.PaperCheckReq;
 import com.eva.check.pojo.dto.PaperResult;
+import com.eva.check.pojo.vo.SimilarPaperVO;
 import com.eva.check.service.config.CheckProperties;
 import com.eva.check.service.core.PaperCheckService;
 import com.eva.check.service.core.PaperCollectService;
 import com.eva.check.service.core.SimilarPaperService;
 import com.eva.check.service.event.CheckTaskStartEvent;
 import com.eva.check.service.mq.producer.SendMqService;
+import com.eva.check.service.support.CheckPaperService;
 import com.eva.check.service.support.CheckReportService;
 import com.eva.check.service.support.CheckRequestService;
 import com.eva.check.service.support.CheckTaskService;
@@ -63,6 +66,7 @@ public class PaperCheckServiceImpl implements PaperCheckService {
     private final CheckRequestService checkRequestService;
     private final CheckTaskService checkTaskService;
     private final CheckReportService checkReportService;
+    private final CheckPaperService checkPaperService;
     private final SimilarPaperService similarPaperService;
     private final SendMqService sendMqService;
     private final CheckProperties checkProperties;
@@ -71,7 +75,7 @@ public class PaperCheckServiceImpl implements PaperCheckService {
     @Override
     public String createPaperCheck(PaperCheckReq paperCheckReq) throws SystemException {
         checkParams(paperCheckReq);
-        // 拆解验证任务 先只处理正文检测 TODO
+        // 拆解验证任务 先只处理正文检测
         CheckRequest checkRequest = PaperCheckConverter.INSTANCE.paperCheckReq2CheckReq(paperCheckReq);
         String checkNo = StringUtils.hasText(paperCheckReq.getCheckNo()) ? paperCheckReq.getCheckNo() : NanoId.randomNanoId();
         // 设置checkNo
@@ -79,6 +83,10 @@ public class PaperCheckServiceImpl implements PaperCheckService {
         checkRequest.setStatus(CheckReqStatus.INIT.getValue());
         // 保存check_request
         boolean save = this.checkRequestService.save(checkRequest);
+        // 生成checkPaper
+        CheckPaper checkPaper = PaperCheckConverter.INSTANCE.paperCheckReq2CheckPaper(paperCheckReq);
+        checkPaper.setCheckId(checkRequest.getCheckId());
+        this.checkPaperService.save(checkPaper);
 
         // 按需生成task
         List<CheckTask> checkTaskList = Lists.newArrayListWithCapacity(16);
@@ -87,17 +95,20 @@ public class PaperCheckServiceImpl implements PaperCheckService {
             contentCheckTask.setCheckId(checkRequest.getCheckId())
                     .setCheckNo(checkRequest.getCheckNo())
                     .setPaperNo(checkRequest.getPaperNo())
+                    .setPaperId(checkPaper.getPaperId())
                     .setCheckType(DataType.FULL_TEXT.getValue())
                     .setContent(paperCheckReq.getContent())
                     .setStatus(CheckTaskStatus.INIT.getValue());
             checkTaskList.add(contentCheckTask);
         }
 
+        // TODO 目前不考虑
         if (StringUtils.hasText(paperCheckReq.getContent())) {
             CheckTask titleCheckTask = new CheckTask();
             titleCheckTask.setCheckId(checkRequest.getCheckId())
                     .setCheckNo(checkRequest.getCheckNo())
                     .setPaperNo(checkRequest.getPaperNo())
+                    .setPaperId(checkPaper.getPaperId())
                     .setCheckType(DataType.TITLE.getValue())
                     .setContent(paperCheckReq.getTitle())
                     .setStatus(CheckTaskStatus.INIT.getValue());
@@ -108,6 +119,7 @@ public class PaperCheckServiceImpl implements PaperCheckService {
         checkRequest.setTaskNum(checkTaskList.size());
         checkRequest.setStatus(CheckReqStatus.DOING.getValue());
         this.checkRequestService.updateById(checkRequest);
+
         // 将任务推送MQ 进行异步处理 TODO
         CheckTaskStartEvent checkTaskStartEvent = CheckTaskStartEvent.builder()
                 .checkTasks(checkTaskList)
@@ -163,15 +175,19 @@ public class PaperCheckServiceImpl implements PaperCheckService {
     @Override
     public Map<String, Object> getPaperCheckReportParams(String checkNo) throws SystemException {
         CheckRequest checkRequest = this.checkRequestService.getByCheckNo(checkNo);
+        if (checkRequest == null) {
+            return null;
+        }
         CheckTask contentCheckTask = this.checkTaskService.findContentCheckTask(checkNo);
         PaperResult paperResult = this.similarPaperService.assemblePaperResult(contentCheckTask.getTaskId());
-
+        List<SimilarPaperVO> allSimilarPaperList = this.checkPaperService.getAllSimilarPaper(contentCheckTask.getPaperId());
         Map<String, Object> params = Maps.newHashMap();
         params.put("finalSimilarity", NumberUtil.decimalFormat("#.##%", checkRequest.getSimilarity()));
         params.put("checkRequest", checkRequest);
         params.put("contentCheckTask", contentCheckTask);
         params.put("reportParagraphs", ReportConverter.INSTANCE.paperResult2paragraphVO(paperResult));
         params.put("similarSentenceResultMap", ReportConverter.INSTANCE.paperResult2SentenceMap(paperResult));
+        params.put("allSimilarPaperList", allSimilarPaperList);
         params.put("isDownload", true);
         return params;
     }
@@ -250,10 +266,10 @@ public class PaperCheckServiceImpl implements PaperCheckService {
         // 拷贝静态资源文件
         try {
             FileUtil.copyContent(Paths.get(
-                    Objects.requireNonNull(
-                            PaperCheckServiceImpl.class.getClassLoader().
-                                    getResource("templates/download/static/"))
-                            .toURI())
+                            Objects.requireNonNull(
+                                            PaperCheckServiceImpl.class.getClassLoader().
+                                                    getResource("templates/download/static/"))
+                                    .toURI())
                     , reprotFolderPath);
         } catch (URISyntaxException e) {
             log.error("拷贝静态资源文件失败", e);
@@ -279,7 +295,6 @@ public class PaperCheckServiceImpl implements PaperCheckService {
 
         checkReport.setStatus(CheckReportStatus.DONE.getValue());
     }
-
 
 
 }
