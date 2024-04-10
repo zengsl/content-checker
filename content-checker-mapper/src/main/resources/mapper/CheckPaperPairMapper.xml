@@ -21,17 +21,21 @@
     </sql>
 
     <select id="getSimilarityPapers" resultType="com.eva.check.pojo.vo.SimilarPaperVO" parameterType="long">
-        select t.check_paper_id as checkPaperId,
+        select t.check_paper_id  as checkPaperId,
+               cp.paper_no       as checkPaperNo,
                t.target_paper_id as targetPaperId,
-               pi.title as targetTitle,
-               pi.author as targetAuthor,
-               pi.content as targetContent,
-               pi.publish_year as targetPublishYear,
-               t.similarity as similarity
+               pi.paper_no       as targetPaperNo,
+               pi.title          as targetTitle,
+               pi.author         as targetAuthor,
+               pi.content        as targetContent,
+               pi.publish_year   as targetPublishYear,
+               t.similarity      as similarity
         from check_paper_pair t
-                 left join paper_info pi on pi.paper_id = t.target_paper_id
-        where t.check_paper_id = #{checkPaperId} and t.similarity > 0
-        order by t.similarity desc
+                 left join check_paper cp on cp.paper_id = t.check_paper_id
 
-    </select>
+                 left join paper_info pi on pi.paper_id = t.target_paper_id
+        where t.check_paper_id = #{checkPaperId}
+          and t.similarity > 0
+        order by t.similarity desc
+            </select>
 </mapper>

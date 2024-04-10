@@ -12,8 +12,10 @@ import lombok.Data;
 public class SimilarPaperVO {
 
     private Long checkPaperId;
+    private String checkPaperNo;
 
     private Long targetPaperId;
+    private String targetPaperNo;
 
     private String targetTitle;
 
@@ -25,6 +27,5 @@ public class SimilarPaperVO {
 
     private Double similarity;
     private String formatSimilarity;
-
     private String cssClassName;
 }

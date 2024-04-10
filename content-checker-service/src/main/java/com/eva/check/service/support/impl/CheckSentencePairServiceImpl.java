@@ -25,6 +25,7 @@ public class CheckSentencePairServiceImpl extends ServiceImpl<CheckSentencePairM
     public List<CheckSentencePair> getAllByCheckSentenceId(Long checkSentenceId) {
         LambdaQueryWrapper<CheckSentencePair> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(CheckSentencePair::getCheckSentenceId, checkSentenceId);
+        queryWrapper.orderByDesc(CheckSentencePair::getSimilarity);
         return this.baseMapper.selectList(queryWrapper);
     }
 

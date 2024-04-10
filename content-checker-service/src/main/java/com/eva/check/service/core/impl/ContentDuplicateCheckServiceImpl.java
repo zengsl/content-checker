@@ -322,7 +322,9 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
                     continue;
                 }
                 // 所有疑似句子的算术平均数作为当前句子的相似度
-                double sentenceSimilarity = SimilarUtil.formatSimilarity(checkSentencePairList.stream().mapToDouble(CheckSentencePair::getSimilarity).sum() / checkSentencePairList.size());
+//                double sentenceSimilarity = SimilarUtil.formatSimilarity(checkSentencePairList.stream().mapToDouble(CheckSentencePair::getSimilarity).sum() / checkSentencePairList.size());
+                // 所有疑似句子的最大值作为当前句子的相似度
+                double sentenceSimilarity = SimilarUtil.formatSimilarity(checkSentencePairList.stream().mapToDouble(CheckSentencePair::getSimilarity).max().orElse(0));
                 finishCheckSentence(checkSentence, sentenceSimilarity);
                 // 累加每个句子的相似度
                 sentenceSimilarityCounter += sentenceSimilarity;

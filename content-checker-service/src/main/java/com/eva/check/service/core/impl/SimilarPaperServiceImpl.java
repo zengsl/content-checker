@@ -45,10 +45,10 @@ public class SimilarPaperServiceImpl implements SimilarPaperService {
         paragraphResult.setCssClassName(this.similarTextRule.computeTextColor(similarity).getCssClass());
         paragraphResult.setCheckParagraphId(checkParagraphId);
         // 不相似则直接返回原文
-        if (this.similarTextRule.isNotSimilar(similarity)) {
+        /*if (this.similarTextRule.isNotSimilar(similarity)) {
             paragraphResult.setRenderContent(originalParagraph);
             return paragraphResult;
-        }
+        }*/
         // 按照句子进行处理
         Map<Long, SentenceResult> sentenceResultMap = Maps.newHashMap();
         List<CheckSentence> checkSentences = this.checkSentenceService.getByParagraphId(checkParagraphId);
