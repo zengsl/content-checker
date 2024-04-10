@@ -13,5 +13,6 @@ import java.util.List;
 public interface CheckSentencePairService extends IService<CheckSentencePair> {
 
     List<CheckSentencePair> getAllByCheckSentenceId(Long checkSentenceId);
+    List<CheckSentencePair> getAllByCheckSentenceId(Long checkSentenceId, Double similarity);
     List<CheckSentencePair> getAllByCheckParagraphId(Long checkParagraphId);
 }

@@ -20,6 +20,15 @@ import java.util.List;
 public class CheckSentencePairServiceImpl extends ServiceImpl<CheckSentencePairMapper, CheckSentencePair>
     implements CheckSentencePairService {
 
+    @Override
+    public List<CheckSentencePair> getAllByCheckSentenceId(Long checkSentenceId, Double similarity) {
+        LambdaQueryWrapper<CheckSentencePair> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CheckSentencePair::getCheckSentenceId, checkSentenceId);
+        queryWrapper.ge(CheckSentencePair::getSimilarity, similarity);
+        queryWrapper.orderByDesc(CheckSentencePair::getSimilarity);
+        return this.baseMapper.selectList(queryWrapper);
+    }
+
     @Transactional(readOnly = true)
     @Override
     public List<CheckSentencePair> getAllByCheckSentenceId(Long checkSentenceId) {

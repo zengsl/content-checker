@@ -6,6 +6,7 @@ import com.eva.check.pojo.dto.PaperResult;
 import com.eva.check.pojo.dto.ParagraphResult;
 import com.eva.check.pojo.dto.SentencePairResult;
 import com.eva.check.pojo.dto.SentenceResult;
+import com.eva.check.service.config.CheckProperties;
 import com.eva.check.service.core.SimilarPaperService;
 import com.eva.check.service.core.SimilarTextRender;
 import com.eva.check.service.core.SimilarTextRule;
@@ -36,6 +37,7 @@ public class SimilarPaperServiceImpl implements SimilarPaperService {
     private final PaperSentenceService paperSentenceService;
     private final CheckParagraphService checkParagraphService;
     private final PaperInfoService paperInfoService;
+    private final CheckProperties checkProperties;
 
     @Override
     public ParagraphResult assembleParagraphResult(String originalParagraph, Double similarity, Long checkParagraphId) {
@@ -63,7 +65,7 @@ public class SimilarPaperServiceImpl implements SimilarPaperService {
             sentenceResult.setCheckSentence(checkSentence.getContent());
             sentenceResult.setSimilarity(checkSentence.getSimilarity());
             sentenceResult.setCssClassName(this.similarTextRule.computeTextColor(checkSentence.getSimilarity()).getCssClass());
-            List<CheckSentencePair> checkSentencePairList = this.checkSentencePairService.getAllByCheckSentenceId(checkSentence.getSentenceId());
+            List<CheckSentencePair> checkSentencePairList = this.checkSentencePairService.getAllByCheckSentenceId(checkSentence.getSentenceId(), checkProperties.getSentenceSimilarityThreshold());
             // 句子对结果的列表
             List<SentencePairResult> sentencePairResultList = Lists.newArrayList();
             // 循环检测句子对列表，填充好句子对结果的列表

@@ -222,12 +222,13 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
                     Map<String, Float> paperSentenceWordFrequency = SimilarUtil.countWordFrequency(paperSentenceWordList);
                     // 计算相似度
                     double cosineSimilarity = SimilarUtil.getCosineSimilarity(checkSentenceWordFrequency, paperSentenceWordFrequency);
-                    if (cosineSimilarity < checkProperties.getSentenceSimilarityThreshold()) {
-                        log.debug("相似度小于阈值，不进行相似度计算");
-                        continue;
+                    // 计算出的相似度是否大于等于阈值；相似度小于阈值，不进行相似度计算，但是需要保留比对的结果
+                    boolean needCalculate = cosineSimilarity >= checkProperties.getSentenceSimilarityThreshold();
+                    if (needCalculate) {
+                        // 相似度累加
+                        similarityCounter += cosineSimilarity;
                     }
-                    // 相似度累加
-                    similarityCounter += cosineSimilarity;
+
                     // 计算每句的相似度以及相似的词。
                     CheckSentencePair checkSentencePair = CheckSentencePair.builder()
                             .taskId(checkTask.getTaskId())
@@ -245,7 +246,8 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
             if (checkSentencePairList.isEmpty()) {
                 checkParagraphPair.setSimilarity(SimilarUtil.formatSimilarity(ContentCheckConstant.SIMILARITY_ZERO));
             } else {
-                checkParagraphPair.setSimilarity(SimilarUtil.formatSimilarity(similarityCounter / checkSentencePairList.size()));
+                // 段落比对 相似度计算：相似度累加 / 检测句子数量 TODO
+                checkParagraphPair.setSimilarity(SimilarUtil.formatSimilarity(similarityCounter / checkSentenceList.size()));
             }
             checkParagraphPair.setStatus(CheckParagraphPairStatus.DONE.getValue());
             // 按照每一对CheckParagraphPair批量保存CheckSentencePair
