@@ -31,13 +31,32 @@ public interface SendMqService {
      */
     void cancelTask(CheckTaskCancelEvent checkTaskCancelEvent);
 
+    /**
+     * 内容预检，快速查询疑似相似项目
+     *
+     * @param preCheckEvent 预检事件
+     */
     void doContentPreCheck(PreCheckEvent preCheckEvent);
 
+    /**
+     * 段落检查，计算相似度
+     *
+     * @param checkParagraphEvent 段落检测事件
+     */
     void doParagraphCheck(CheckParagraphEvent checkParagraphEvent);
 
+    /**
+     * 段落检查，计算相似度
+     *
+     * @param collectResultEvent 收集结果事件
+     */
     void doCollectResult(CollectResultEvent collectResultEvent);
 
+    /**
+     * 生成报告
+     *
+     * @param collectResultEvent 收集结果事件
+     */
     void doGenerateReport(CollectResultEvent collectResultEvent);
 
-    /*    void sendPreCompare();*/
 }

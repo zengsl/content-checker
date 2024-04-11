@@ -9,7 +9,8 @@ import co.elastic.clients.transport.rest_client.RestClientOptions;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
 import com.eva.check.common.constant.MessageQueueConstants;
 import com.eva.check.service.core.*;
-import com.eva.check.service.core.impl.DefaultCheckTaskExecutorImpl;
+import com.eva.check.service.core.CheckTaskService;
+import com.eva.check.service.core.impl.DefaultCheckTaskServiceImpl;
 import com.eva.check.service.core.impl.DefaultSimilarTextRuleImpl;
 import com.eva.check.service.core.impl.DefaultSimilarityStrategy;
 import com.eva.check.service.core.impl.ParagraphRenderImpl;
@@ -91,8 +92,8 @@ public class ContentCheckAutoConfiguration extends ElasticsearchConfiguration {
     @ConditionalOnProperty(name = "content-check.mqType", havingValue = MessageQueueConstants.EVENT_BUS, matchIfMissing = true)
     protected static class GuavaStrategy {
         @Bean
-        CheckTaskExecutor checkTaskDispatcher(CheckTaskService checkTaskService, CheckRequestService checkRequestService, DuplicateCheckPrepareService duplicateCheckPrepareService) {
-            return new DefaultCheckTaskExecutorImpl(checkRequestService, checkTaskService, duplicateCheckPrepareService);
+        CheckTaskService checkTaskDispatcher(com.eva.check.service.support.CheckTaskService checkTaskService, CheckRequestService checkRequestService, DuplicateCheckPrepareService duplicateCheckPrepareService) {
+            return new DefaultCheckTaskServiceImpl(checkRequestService, checkTaskService, duplicateCheckPrepareService);
         }
 
         @Bean
@@ -101,7 +102,7 @@ public class ContentCheckAutoConfiguration extends ElasticsearchConfiguration {
         }
 
         @Bean
-        CheckTaskEventBusListener checkTaskEventBusListener(CheckTaskExecutor checkTaskDispatcher) {
+        CheckTaskEventBusListener checkTaskEventBusListener(CheckTaskService checkTaskDispatcher) {
             return new CheckTaskEventBusListenerImpl(checkTaskDispatcher);
         }
 

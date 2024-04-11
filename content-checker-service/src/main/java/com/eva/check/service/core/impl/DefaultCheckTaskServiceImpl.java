@@ -2,10 +2,9 @@ package com.eva.check.service.core.impl;
 
 import com.eva.check.common.enums.DataType;
 import com.eva.check.pojo.CheckTask;
-import com.eva.check.service.core.CheckTaskExecutor;
+import com.eva.check.service.core.CheckTaskService;
 import com.eva.check.service.core.DuplicateCheckPrepareService;
 import com.eva.check.service.support.CheckRequestService;
-import com.eva.check.service.support.CheckTaskService;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,9 +21,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @RequiredArgsConstructor
 @Transactional(rollbackFor = Exception.class)
-public class DefaultCheckTaskExecutorImpl implements CheckTaskExecutor {
+public class DefaultCheckTaskServiceImpl implements CheckTaskService {
     private final CheckRequestService checkRequestService;
-    private final CheckTaskService checkTaskService;
+    private final com.eva.check.service.support.CheckTaskService checkTaskService;
     private final DuplicateCheckPrepareService duplicateCheckPrepareService;
     private final Map<Long, Integer> checkRequestMap = Maps.newConcurrentMap();
     private final Map<Long, AtomicInteger> checkTaskCountMap = Maps.newConcurrentMap();

@@ -10,10 +10,8 @@ import java.util.List;
  * @author zzz
  * @date 2023/11/25 16:12
  */
-public interface CheckTaskExecutor {
+public interface CheckTaskService {
     void startAllTask(Long checkId,List<CheckTask> checkTaskList);
     void finishTask(CheckTask checkTask);
     void cancelTask(CheckTask checkTask);
-
-
 }
