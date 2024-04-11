@@ -10,6 +10,7 @@ import co.elastic.clients.transport.rest_client.RestClientTransport;
 import com.eva.check.common.constant.MessageQueueConstants;
 import com.eva.check.service.core.*;
 import com.eva.check.service.core.impl.DefaultCheckTaskExecutorImpl;
+import com.eva.check.service.core.impl.DefaultSimilarTextRuleImpl;
 import com.eva.check.service.core.impl.DefaultSimilarityStrategy;
 import com.eva.check.service.core.impl.ParagraphRenderImpl;
 import com.eva.check.service.mq.consumer.eventbus.CheckTaskEventBusListenerImpl;
@@ -74,16 +75,30 @@ public class ContentCheckAutoConfiguration extends ElasticsearchConfiguration {
         return new ParagraphRenderImpl();
     }
 
-
     @Bean
     SimilarityStrategy similarityStrategy() {
         // 相似度策略
         return new DefaultSimilarityStrategy();
     }
 
+    @Bean
+    SimilarTextRule similarTextRule() {
+        // 文本渲染
+        return new DefaultSimilarTextRuleImpl();
+    }
+
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(name = "content-check.mqType", havingValue = MessageQueueConstants.EVENT_BUS, matchIfMissing = true)
     protected static class GuavaStrategy {
+        @Bean
+        CheckTaskExecutor checkTaskDispatcher(CheckTaskService checkTaskService, CheckRequestService checkRequestService, DuplicateCheckPrepareService duplicateCheckPrepareService) {
+            return new DefaultCheckTaskExecutorImpl(checkRequestService, checkTaskService, duplicateCheckPrepareService);
+        }
+
+        @Bean
+        SendMqService sendMqService(CheckTaskEventBusListener checkTaskEventBusListener, ContentCheckEventBusListener contentCheckEventBusListener) {
+            return new EventBusSendMqServiceImpl(checkTaskEventBusListener, contentCheckEventBusListener);
+        }
 
         @Bean
         CheckTaskEventBusListener checkTaskEventBusListener(CheckTaskExecutor checkTaskDispatcher) {
@@ -95,15 +110,6 @@ public class ContentCheckAutoConfiguration extends ElasticsearchConfiguration {
             return new ContentCheckEventBusListenerImpl(duplicateCheckService);
         }
 
-        @Bean
-        SendMqService sendMqService(CheckTaskEventBusListener checkTaskEventBusListener, ContentCheckEventBusListener contentCheckEventBusListener) {
-            return new EventBusSendMqServiceImpl(checkTaskEventBusListener, contentCheckEventBusListener);
-        }
-
-        @Bean
-        CheckTaskExecutor checkTaskDispatcher(CheckTaskService checkTaskService, CheckRequestService checkRequestService, DuplicateCheckPrepareService duplicateCheckPrepareService) {
-            return new DefaultCheckTaskExecutorImpl(checkRequestService, checkTaskService, duplicateCheckPrepareService);
-        }
     }
 
     @Configuration(proxyBeanMethods = false)

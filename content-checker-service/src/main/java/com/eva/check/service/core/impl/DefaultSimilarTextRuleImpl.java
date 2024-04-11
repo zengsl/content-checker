@@ -12,7 +12,6 @@ import java.math.BigDecimal;
  * @author zzz
  * @date 2023/11/27 21:40
  */
-@Service
 public class DefaultSimilarTextRuleImpl implements SimilarTextRule {
 
     @Override
