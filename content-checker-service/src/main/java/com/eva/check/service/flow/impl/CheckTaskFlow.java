@@ -1,8 +1,10 @@
 package com.eva.check.service.flow.impl;
 
 import com.eva.check.pojo.CheckTask;
-import com.eva.check.service.event.CheckTaskStartEvent;
+import com.eva.check.pojo.converter.CheckTaskConverter;
+import com.eva.check.pojo.dto.MqCheckTask;
 import com.eva.check.service.flow.ICheckTaskFlow;
+import com.eva.check.service.mq.common.event.CheckTaskStartEvent;
 import com.eva.check.service.mq.producer.SendMqService;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,7 @@ public class CheckTaskFlow extends BaseCheckTaskFlow implements ICheckTaskFlow {
 
     @Override
     public void processAllTask(Long checkId, List<CheckTask> checkTaskList) {
+//        List<MqCheckTask> mqCheckTaskList = CheckTaskConverter.INSTANCE.checkTask2MqCheckTask(checkTaskList);
         // 将任务推送MQ 进行异步处理
         CheckTaskStartEvent checkTaskStartEvent = CheckTaskStartEvent.builder()
                 .checkTasks(checkTaskList)

@@ -59,6 +59,14 @@ public class CheckTaskServiceImpl extends ServiceImpl<CheckTaskMapper, CheckTask
         queryWrapper.eq(CheckTask::getCheckType, checkType);
         return this.baseMapper.selectOne(queryWrapper);
     }
+
+    @Override
+    public List<CheckTask> findCheckTask(String checkNo, List<String> statusList) {
+        LambdaQueryWrapper<CheckTask> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CheckTask::getCheckNo, checkNo);
+        queryWrapper.in(CheckTask::getStatus, statusList);
+        return this.baseMapper.selectList(queryWrapper);
+    }
 }
 
 

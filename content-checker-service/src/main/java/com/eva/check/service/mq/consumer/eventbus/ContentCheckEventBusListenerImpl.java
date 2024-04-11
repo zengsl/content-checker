@@ -1,9 +1,9 @@
 package com.eva.check.service.mq.consumer.eventbus;
 
 import com.eva.check.service.core.DuplicateCheckService;
-import com.eva.check.service.event.CheckParagraphEvent;
-import com.eva.check.service.event.CollectResultEvent;
-import com.eva.check.service.event.PreCheckEvent;
+import com.eva.check.service.mq.producer.eventbus.event.CheckParagraphEvent;
+import com.eva.check.service.mq.producer.eventbus.event.CollectResultEvent;
+import com.eva.check.service.mq.producer.eventbus.event.PreCheckEvent;
 import com.eva.check.service.mq.producer.eventbus.listener.ContentCheckEventBusListener;
 import com.google.common.eventbus.Subscribe;
 import lombok.RequiredArgsConstructor;

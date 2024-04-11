@@ -2,7 +2,6 @@ package com.eva.check.service.core.impl;
 
 import com.eva.check.common.enums.TextColor;
 import com.eva.check.service.core.SimilarTextRule;
-import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 

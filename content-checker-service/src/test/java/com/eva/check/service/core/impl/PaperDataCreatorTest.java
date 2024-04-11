@@ -4,6 +4,7 @@ import com.eva.check.pojo.dto.PaperAddReq;
 import com.eva.check.service.config.ContentCheckAutoConfiguration;
 import com.eva.check.service.core.PaperCollectService;
 import com.eva.check.service.es.repository.PaperParagraphRepository;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -31,9 +32,10 @@ public class PaperDataCreatorTest {
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
-
     private PaperParagraphRepository paperParagraphRepository;
 
+    @Autowired
+    private RocketMQTemplate rocketMQTemplate;
 
     public static final String INIT_DATA_PATH = "initDataWx";
 
@@ -102,5 +104,10 @@ public class PaperDataCreatorTest {
     @Test
     void testClearEsData() {
         this.paperParagraphRepository.deleteAll();
+    }
+
+    @Test
+    void testClearRocketMq() {
+        /*this.rocketMQTemplate.getProducer().*/
     }
 }

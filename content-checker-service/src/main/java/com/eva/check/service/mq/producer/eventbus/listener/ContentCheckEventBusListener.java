@@ -1,9 +1,9 @@
 package com.eva.check.service.mq.producer.eventbus.listener;
 
 
-import com.eva.check.service.event.CheckParagraphEvent;
-import com.eva.check.service.event.CollectResultEvent;
-import com.eva.check.service.event.PreCheckEvent;
+import com.eva.check.service.mq.producer.eventbus.event.CheckParagraphEvent;
+import com.eva.check.service.mq.producer.eventbus.event.CollectResultEvent;
+import com.eva.check.service.mq.producer.eventbus.event.PreCheckEvent;
 
 /**
  * EventBus监听器

@@ -35,6 +35,9 @@ import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.StringUtils;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.ISpringTemplateEngine;
@@ -71,7 +74,7 @@ public class PaperCheckServiceImpl implements PaperCheckService {
     private final ISpringTemplateEngine templateEngine;
     private final ICheckTaskFlow checkTaskFlow;
 
-
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public String createPaperCheck(PaperCheckReq paperCheckReq) throws SystemException {
         checkParams(paperCheckReq);
@@ -121,7 +124,12 @@ public class PaperCheckServiceImpl implements PaperCheckService {
         this.checkRequestService.updateById(checkRequest);
 
         // 开启任务
-        this.checkTaskFlow.processAllTask(checkRequest.getCheckId(), checkTaskList);
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                checkTaskFlow.processAllTask(checkRequest.getCheckId(), checkTaskList);
+            }
+        });
         return checkRequest.getCheckNo();
     }
 

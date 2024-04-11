@@ -1,8 +1,6 @@
 package com.eva.check.service.flow.impl;
 
 import com.eva.check.pojo.CheckTask;
-import com.eva.check.service.event.CheckTaskCancelEvent;
-import com.eva.check.service.event.CheckTaskFinishEvent;
 import com.eva.check.service.flow.ICheckTaskBaseFlow;
 import com.eva.check.service.mq.producer.SendMqService;
 import lombok.Getter;

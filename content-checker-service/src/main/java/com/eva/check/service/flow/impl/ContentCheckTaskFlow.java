@@ -15,9 +15,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Slf4j
-public class ContentBaseContentCheckTaskFlow extends BaseCheckTaskFlow implements IContentCheckTaskBaseFlow {
+public class ContentCheckTaskFlow extends BaseCheckTaskFlow implements IContentCheckTaskBaseFlow {
 
-    public ContentBaseContentCheckTaskFlow(SendMqService sendMqService) {
+    public ContentCheckTaskFlow(SendMqService sendMqService) {
         super(sendMqService);
     }
 
@@ -27,7 +27,6 @@ public class ContentBaseContentCheckTaskFlow extends BaseCheckTaskFlow implement
         ContentCheckState nextState = currentState.nextState();
         switch (nextState) {
             case PRE_CHECK:
-
                 this.getSendMqService().doContentPreCheck(checkTask);
                 break;
             case PARAGRAPH_CHECK:

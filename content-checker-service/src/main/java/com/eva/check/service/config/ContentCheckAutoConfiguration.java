@@ -9,16 +9,19 @@ import co.elastic.clients.transport.rest_client.RestClientOptions;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
 import com.eva.check.common.constant.MessageQueueConstants;
 import com.eva.check.service.core.*;
-import com.eva.check.service.core.impl.DefaultCheckTaskServiceImpl;
+import com.eva.check.service.core.impl.DefaultCheckTaskExecuteServiceImpl;
 import com.eva.check.service.core.impl.DefaultSimilarTextRuleImpl;
 import com.eva.check.service.core.impl.DefaultSimilarityStrategy;
 import com.eva.check.service.core.impl.ParagraphRenderImpl;
 import com.eva.check.service.mq.consumer.eventbus.CheckTaskEventBusListenerImpl;
 import com.eva.check.service.mq.consumer.eventbus.ContentCheckEventBusListenerImpl;
+import com.eva.check.service.mq.consumer.rocket.CheckTaskRocketListenerImpl;
+import com.eva.check.service.mq.consumer.rocket.ContentCheckRocketListenerImpl;
 import com.eva.check.service.mq.producer.SendMqService;
 import com.eva.check.service.mq.producer.eventbus.EventBusSendMqServiceImpl;
 import com.eva.check.service.mq.producer.eventbus.listener.CheckTaskEventBusListener;
 import com.eva.check.service.mq.producer.eventbus.listener.ContentCheckEventBusListener;
+import com.eva.check.service.mq.producer.rocket.RocketSendMqServiceImpl;
 import com.eva.check.service.support.CheckRequestService;
 import com.eva.check.service.support.PaperInfoService;
 import com.eva.check.service.support.PaperParagraphService;
@@ -36,6 +39,7 @@ import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.entity.ContentType;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -94,13 +98,15 @@ public class ContentCheckAutoConfiguration extends ElasticsearchConfiguration {
         return new DefaultSimilarTextRuleImpl();
     }
 
+    @Bean
+    CheckTaskExecuteService checkTaskDispatcher(com.eva.check.service.support.CheckTaskService checkTaskService, CheckRequestService checkRequestService, DuplicateCheckPrepareService duplicateCheckPrepareService) {
+        return new DefaultCheckTaskExecuteServiceImpl(checkRequestService, checkTaskService, duplicateCheckPrepareService);
+    }
+
+
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnProperty(name = "content-check.mqType", havingValue = MessageQueueConstants.EVENT_BUS, matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "content-check",name = "mq", havingValue = MessageQueueConstants.EVENT_BUS, matchIfMissing = true)
     protected static class GuavaStrategy {
-        @Bean
-        CheckTaskService checkTaskDispatcher(com.eva.check.service.support.CheckTaskService checkTaskService, CheckRequestService checkRequestService, DuplicateCheckPrepareService duplicateCheckPrepareService) {
-            return new DefaultCheckTaskServiceImpl(checkRequestService, checkTaskService, duplicateCheckPrepareService);
-        }
 
         @Bean
         SendMqService sendMqService(CheckTaskEventBusListener checkTaskEventBusListener, ContentCheckEventBusListener contentCheckEventBusListener) {
@@ -108,8 +114,8 @@ public class ContentCheckAutoConfiguration extends ElasticsearchConfiguration {
         }
 
         @Bean
-        CheckTaskEventBusListener checkTaskEventBusListener(CheckTaskService checkTaskDispatcher) {
-            return new CheckTaskEventBusListenerImpl(checkTaskDispatcher);
+        CheckTaskEventBusListener checkTaskEventBusListener(CheckTaskExecuteService checkTaskExecuteService) {
+            return new CheckTaskEventBusListenerImpl(checkTaskExecuteService);
         }
 
         @Bean
@@ -120,13 +126,21 @@ public class ContentCheckAutoConfiguration extends ElasticsearchConfiguration {
     }
 
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnProperty(name = "content-check.mqType", havingValue = MessageQueueConstants.ROCKET_MQ)
+    @ConditionalOnProperty(prefix = "content-check",name = "mq", havingValue = MessageQueueConstants.ROCKET_MQ)
     protected static class RocketStrategy {
         @Bean
-        SendMqService sendMqService() {
+        SendMqService sendMqService(RocketMQTemplate rocketMqTemplate) {
+            return new RocketSendMqServiceImpl(rocketMqTemplate);
+        }
 
-            // 暂未实现非Guava的实现
-            return null;
+        @Bean
+        ContentCheckRocketListenerImpl contentCheckRocketListener() {
+            return new ContentCheckRocketListenerImpl();
+        }
+
+        @Bean
+        CheckTaskRocketListenerImpl checkTaskRocketListener() {
+            return new CheckTaskRocketListenerImpl();
         }
     }
 
@@ -143,7 +157,7 @@ public class ContentCheckAutoConfiguration extends ElasticsearchConfiguration {
         if (uris == null) {
             throw new RuntimeException("需要配置spring.elasticsearch相关信息");
         }
-        if(uris.get(0).startsWith("http://")) {
+        if (uris.get(0).startsWith("http://")) {
             url = uris.get(0).replace("http://", "");
         } else if (uris.get(0).startsWith("https://")) {
             url = uris.get(0).replace("https://", "");

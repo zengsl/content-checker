@@ -7,11 +7,13 @@ import com.eva.check.common.util.TextUtil;
 import com.eva.check.pojo.CheckParagraph;
 import com.eva.check.pojo.CheckSentence;
 import com.eva.check.pojo.CheckTask;
+import com.eva.check.pojo.dto.MqCheckTask;
 import com.eva.check.service.core.DuplicateCheckPrepareService;
 import com.eva.check.service.flow.IContentCheckTaskBaseFlow;
 import com.eva.check.service.flow.enums.ContentCheckState;
 import com.eva.check.service.support.CheckParagraphService;
 import com.eva.check.service.support.CheckSentenceService;
+import com.eva.check.service.support.CheckTaskService;
 import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
 
@@ -29,7 +33,6 @@ import java.util.List;
  * @date 2023/11/25 16:12
  */
 @Service
-@Transactional(rollbackFor = Exception.class)
 @RequiredArgsConstructor
 @Slf4j
 public class ContentDuplicateCheckPrepareServiceImpl implements DuplicateCheckPrepareService {
@@ -37,6 +40,7 @@ public class ContentDuplicateCheckPrepareServiceImpl implements DuplicateCheckPr
 
     private final CheckParagraphService checkParagraphService;
     private final CheckSentenceService checkSentenceService;
+    private final CheckTaskService checkTaskService;
     private IContentCheckTaskBaseFlow contentCheckTaskFlow;
 
     @Autowired
@@ -45,14 +49,16 @@ public class ContentDuplicateCheckPrepareServiceImpl implements DuplicateCheckPr
         this.contentCheckTaskFlow = contentCheckTaskFlow;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void execute(CheckTask checkTask) {
         if (checkTask == null) {
             log.error("检测任务内容checkTask为空");
             return;
         }
+//        CheckTask checkTask = this.checkTaskService.getById(mqCheckTask.getTaskId());
         if (StrUtil.isBlank(checkTask.getContent())) {
-            log.error("检测任务内容为空，任务ID：{}", checkTask.getTaskId());
+            log.error("检测任务内容为空，任务：{}", checkTask);
             this.contentCheckTaskFlow.processCancel(checkTask);
             return;
         }
@@ -89,11 +95,14 @@ public class ContentDuplicateCheckPrepareServiceImpl implements DuplicateCheckPr
         }
         // 批量插入句子
         this.checkSentenceService.saveBatch(checkSentenceList);
-        // 触发预检测任务事件
-        this.contentCheckTaskFlow.processStateNext(checkTask, ContentCheckState.PREPARE);
-        /*PreCheckEvent preCheckEvent = PreCheckEvent.builder()
-               .checkTask(checkTask)
-               .build();
-        this.sendMqService.doContentPreCheck(preCheckEvent);*/
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                // 触发预检测任务事件
+                contentCheckTaskFlow.processStateNext(checkTask, ContentCheckState.PREPARE);
+            }
+        });
+
     }
 }

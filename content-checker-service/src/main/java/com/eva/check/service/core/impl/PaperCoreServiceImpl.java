@@ -93,10 +93,8 @@ public class PaperCoreServiceImpl implements PaperCoreService {
         TotalHits total = response.hits().total();
         assert total != null;
         long totalDataCount = total.value();
-        System.err.println("总数量=" + totalDataCount);
         long tempPageNo = totalDataCount % pageSize == 0L ? totalDataCount / pageSize : (totalDataCount / pageSize) + 1L;
-        System.err.println("一同多少页=" + tempPageNo);
-
+        log.info("总数量={},总页数={}", totalDataCount, tempPageNo);
         List<Hit<PaperParagraphDoc>> hits = response.hits().hits();
         /*for (Hit<PaperParagraphDoc> hit : hits) {
             PaperParagraphDoc source = hit.source();

@@ -1,9 +1,9 @@
 package com.eva.check.service.mq.producer.eventbus.listener;
 
 
-import com.eva.check.service.event.CheckTaskCancelEvent;
-import com.eva.check.service.event.CheckTaskFinishEvent;
-import com.eva.check.service.event.CheckTaskStartEvent;
+import com.eva.check.service.mq.common.event.CheckTaskStartEvent;
+import com.eva.check.service.mq.producer.eventbus.event.CheckTaskCancelEvent;
+import com.eva.check.service.mq.producer.eventbus.event.CheckTaskFinishEvent;
 
 /**
  * EventBus监听器

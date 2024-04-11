@@ -1,7 +1,6 @@
 package com.eva.check.service.core.impl;
 
 import com.eva.check.common.constant.ContentCheckConstant;
-import com.eva.check.common.enums.DataSource;
 import com.eva.check.common.enums.DataType;
 import com.eva.check.common.enums.PaperErrorCode;
 import com.eva.check.common.exception.SystemException;

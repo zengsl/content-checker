@@ -26,6 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
 import java.util.Map;
@@ -70,14 +72,14 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
     @Override
     public void findSimilarParagraph(CheckTask checkTask) {
         if (!DataType.FULL_TEXT.getValue().equals(checkTask.getCheckType())) {
-            log.warn("[ContentEventBusListenerImpl] 非全文比对类型，不执行预检查");
+            log.warn("非全文比对类型，不执行预检查");
             return;
         }
 
         // TODO 可以缓存 待观察
         List<CheckParagraph> checkParagraphList = this.checkParagraphService.getByTaskId(checkTask.getTaskId());
         if (CollectionUtil.isEmpty(checkParagraphList)) {
-            log.warn("[ContentEventBusListenerImpl] 无论文段落，不执行预检查");
+            log.warn("无论文段落，不执行预检查");
             this.contentCheckTaskFlow.processCancel(checkTask);
             return;
         }
@@ -121,7 +123,13 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
         if (CollectionUtil.isEmpty(checkParagraphListPair)) {
             // 如果没有相似论文，则直接结束当前任务并设置相似度为0
             checkTask.setSimilarity(ContentCheckConstant.SIMILARITY_ZERO);
-            this.contentCheckTaskFlow.processFinish(checkTask);
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    // 触发预检测任务事件
+                    contentCheckTaskFlow.processFinish(checkTask);
+                }
+            });
         } else {
             // 暂时不提前生成check_paper_pair，待最终结果计算出来之后再新增。否则，到时还需通过update去设置similarity
             // 生成比对论文对 check_paper_pair
@@ -139,8 +147,13 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
 
             // 生成比对段落对 check_paragraph_pair
             this.checkParagraphPairService.initCompareList(checkParagraphListPair);
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    contentCheckTaskFlow.processStateNext(checkTask, ContentCheckState.PRE_CHECK);
+                }
+            });
 
-            contentCheckTaskFlow.processStateNext(checkTask, ContentCheckState.PRE_CHECK);
 
         }
     }
@@ -276,8 +289,13 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
         // 汇总段落检测对的结果
         this.checkParagraphPairService.updateBatchById(checkParagraphPairList);
 
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                contentCheckTaskFlow.processStateNext(checkTask, ContentCheckState.PARAGRAPH_CHECK);
+            }
+        });
 
-        contentCheckTaskFlow.processStateNext(checkTask, ContentCheckState.PARAGRAPH_CHECK);
 
 
     }
@@ -326,10 +344,15 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
             // 收集所有的句子，以便最终批量更新结果
             allCheckSentenceList.addAll(checkSentenceList);
             // 设置段落的相似度,并将结果设置为结束
-            finishCheckParagraph(checkParagraph, SimilarUtil.formatSimilarity(sentenceSimilarityCounter / checkSentenceList.size()));
+            double similarity = 0D;
+            if (checkSentenceList.isEmpty()) {
+                log.error("checkSentenceList is empty, ParagraphId: {}", checkParagraph.getParagraphId());
+            } else {
+                similarity = sentenceSimilarityCounter / checkSentenceList.size();
+            }
+            finishCheckParagraph(checkParagraph, SimilarUtil.formatSimilarity(similarity));
             // 统计所有段落的综合相似度
             paragraphSimilarityCounter += checkParagraph.getSimilarity();
-
             // 计算每段文本与单一疑似段落的相似度结果 生成check_paper_pair
 
 
@@ -342,7 +365,14 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
         // 段落相似度综合
         double taskSimilarity = SimilarUtil.formatSimilarity(paragraphSimilarityCounter / checkParagraphList.size());
         checkTask.setSimilarity(taskSimilarity);
-        contentCheckTaskFlow.processStateNext(checkTask, ContentCheckState.COLLECT_RESULT);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                contentCheckTaskFlow.processStateNext(checkTask, ContentCheckState.COLLECT_RESULT);
+            }
+        });
+
     }
 
 

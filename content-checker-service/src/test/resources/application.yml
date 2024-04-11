@@ -11,7 +11,17 @@ spring:
     password: "gwO+DhAFKGhJmIcI3798"
 
 content-check:
-  mq-type: eventBus
+  mq: rocketMq
+
+
+# rabbitmq 特殊配置
+rocketmq:
+  # 阿里云测试环境
+  name-server: http://10.0.0.96:9876
+  #  name-server: localhost:9876
+  producer:
+    group: sfis-content-checker-producer-group
+    #customizedTraceTopic: SFIS_TRACE_TOPIC
 
 
 mybatis-plus:

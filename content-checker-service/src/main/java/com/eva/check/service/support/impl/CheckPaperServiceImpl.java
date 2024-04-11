@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.eva.check.common.enums.TextColor;
 import com.eva.check.mapper.CheckPaperMapper;
 import com.eva.check.pojo.CheckPaper;
-import com.eva.check.pojo.CheckPaperPair;
 import com.eva.check.pojo.vo.SimilarPaperVO;
 import com.eva.check.service.core.SimilarTextRule;
 import com.eva.check.service.support.CheckPaperPairService;

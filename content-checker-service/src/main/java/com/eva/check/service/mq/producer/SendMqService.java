@@ -1,7 +1,7 @@
 package com.eva.check.service.mq.producer;
 
 import com.eva.check.pojo.CheckTask;
-import com.eva.check.service.event.*;
+import com.eva.check.service.mq.common.event.CheckTaskStartEvent;
 
 /**
  * MQ发送服务

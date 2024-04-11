@@ -1,8 +1,11 @@
-package com.eva.check.service.event;
+package com.eva.check.service.mq.common.event;
 
 import com.eva.check.pojo.CheckTask;
+import com.eva.check.pojo.dto.MqCheckTask;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -15,6 +18,8 @@ import java.util.List;
  */
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class CheckTaskStartEvent {
     /**
      * 验证请求主键

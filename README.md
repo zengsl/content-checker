@@ -72,3 +72,4 @@ You can check paper library with  `PaperCheckServiceImplTest` or web page
 ## TODO
 
 - [ ] 分词优化
+- [ ] 使用guava时，如果不配置rocketMq的配置，会报错

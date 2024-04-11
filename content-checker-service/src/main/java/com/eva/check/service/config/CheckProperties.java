@@ -15,7 +15,7 @@ import java.io.File;
 @ConfigurationProperties(prefix = "content-check")
 @Data
 public class CheckProperties {
-    private String mqType = MessageQueueConstants.EVENT_BUS;
+    private String mq = MessageQueueConstants.EVENT_BUS;
     private String contentSimilarityThreshold = "40%";
     private Double sentenceSimilarityThreshold = 0.4D;
     private String reportPath = System.getProperty("user.dir") + File.separator + "report";
