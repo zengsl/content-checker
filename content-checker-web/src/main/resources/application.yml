@@ -12,6 +12,16 @@ spring:
   thymeleaf:
     cache: false
 
+# rabbitmq 特殊配置
+rocketmq:
+  # 阿里云测试环境
+  name-server: http://172.21.51.55:9876
+  #  name-server: localhost:9876
+  producer:
+    group: sfis-content-checker-producer-group
+    #customizedTraceTopic: SFIS_TRACE_TOPIC
+
+
 
 mybatis-plus:
 #  configuration:

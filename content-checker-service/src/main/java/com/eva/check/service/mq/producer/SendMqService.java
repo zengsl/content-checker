@@ -1,5 +1,6 @@
 package com.eva.check.service.mq.producer;
 
+import com.eva.check.pojo.CheckTask;
 import com.eva.check.service.event.*;
 
 /**
@@ -20,43 +21,43 @@ public interface SendMqService {
     /**
      * 结束任务
      *
-     * @param checkTaskFinishEvent 检测任务结束事件
+     * @param checkTask 检测任务
      */
-    void finishTask(CheckTaskFinishEvent checkTaskFinishEvent);
+    void finishTask(CheckTask checkTask);
 
     /**
      * 结束任务
      *
-     * @param checkTaskCancelEvent 检测任务取消事件
+     * @param checkTask 检测任务
      */
-    void cancelTask(CheckTaskCancelEvent checkTaskCancelEvent);
+    void cancelTask(CheckTask checkTask);
 
     /**
      * 内容预检，快速查询疑似相似项目
      *
-     * @param preCheckEvent 预检事件
+     * @param checkTask 检测任务
      */
-    void doContentPreCheck(PreCheckEvent preCheckEvent);
+    void doContentPreCheck(CheckTask checkTask);
 
     /**
      * 段落检查，计算相似度
      *
-     * @param checkParagraphEvent 段落检测事件
+     * @param checkTask 检测任务
      */
-    void doParagraphCheck(CheckParagraphEvent checkParagraphEvent);
+    void doParagraphCheck(CheckTask checkTask);
 
     /**
      * 段落检查，计算相似度
      *
-     * @param collectResultEvent 收集结果事件
+     * @param checkTask 检测任务
      */
-    void doCollectResult(CollectResultEvent collectResultEvent);
+    void doCollectResult(CheckTask checkTask);
 
     /**
      * 生成报告
      *
-     * @param collectResultEvent 收集结果事件
+     * @param checkTask 检测任务
      */
-    void doGenerateReport(CollectResultEvent collectResultEvent);
+    void doGenerateReport(CheckTask checkTask);
 
 }

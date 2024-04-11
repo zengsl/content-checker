@@ -8,9 +8,8 @@ import com.eva.check.pojo.CheckParagraph;
 import com.eva.check.pojo.CheckSentence;
 import com.eva.check.pojo.CheckTask;
 import com.eva.check.service.core.DuplicateCheckPrepareService;
-import com.eva.check.service.event.CheckTaskCancelEvent;
-import com.eva.check.service.event.PreCheckEvent;
-import com.eva.check.service.mq.producer.SendMqService;
+import com.eva.check.service.flow.IContentCheckTaskBaseFlow;
+import com.eva.check.service.flow.enums.ContentCheckState;
 import com.eva.check.service.support.CheckParagraphService;
 import com.eva.check.service.support.CheckSentenceService;
 import com.google.common.collect.Lists;
@@ -38,12 +37,12 @@ public class ContentDuplicateCheckPrepareServiceImpl implements DuplicateCheckPr
 
     private final CheckParagraphService checkParagraphService;
     private final CheckSentenceService checkSentenceService;
-    private SendMqService sendMqService;
+    private IContentCheckTaskBaseFlow contentCheckTaskFlow;
 
     @Autowired
     @Lazy
-    public void setSendMqService(SendMqService sendMqService) {
-        this.sendMqService = sendMqService;
+    public void setContentCheckTaskFlow(IContentCheckTaskBaseFlow contentCheckTaskFlow) {
+        this.contentCheckTaskFlow = contentCheckTaskFlow;
     }
 
     @Override
@@ -54,8 +53,7 @@ public class ContentDuplicateCheckPrepareServiceImpl implements DuplicateCheckPr
         }
         if (StrUtil.isBlank(checkTask.getContent())) {
             log.error("检测任务内容为空，任务ID：{}", checkTask.getTaskId());
-            CheckTaskCancelEvent checkTaskCancelEvent = CheckTaskCancelEvent.builder().checkTask(checkTask).build();
-            this.sendMqService.cancelTask(checkTaskCancelEvent);
+            this.contentCheckTaskFlow.processCancel(checkTask);
             return;
         }
         // 生成检测文本的指纹信息
@@ -92,9 +90,10 @@ public class ContentDuplicateCheckPrepareServiceImpl implements DuplicateCheckPr
         // 批量插入句子
         this.checkSentenceService.saveBatch(checkSentenceList);
         // 触发预检测任务事件
-        PreCheckEvent preCheckEvent = PreCheckEvent.builder()
+        this.contentCheckTaskFlow.processStateNext(checkTask, ContentCheckState.PREPARE);
+        /*PreCheckEvent preCheckEvent = PreCheckEvent.builder()
                .checkTask(checkTask)
                .build();
-        this.sendMqService.doContentPreCheck(preCheckEvent);
+        this.sendMqService.doContentPreCheck(preCheckEvent);*/
     }
 }

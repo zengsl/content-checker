@@ -1,5 +1,6 @@
 package com.eva.check.service.mq.producer.eventbus;
 
+import com.eva.check.pojo.CheckTask;
 import com.eva.check.service.event.*;
 import com.eva.check.service.mq.producer.SendMqService;
 import com.eva.check.service.mq.producer.eventbus.listener.CheckTaskEventBusListener;
@@ -38,31 +39,43 @@ public class EventBusSendMqServiceImpl implements SendMqService {
     }
 
     @Override
-    public void finishTask(CheckTaskFinishEvent checkTaskFinishEvent) {
+    public void finishTask(CheckTask checkTask) {
+        CheckTaskFinishEvent checkTaskFinishEvent = CheckTaskFinishEvent.builder().checkTask(checkTask).build();
         eventBus.post(checkTaskFinishEvent);
     }
 
     @Override
-    public void cancelTask(CheckTaskCancelEvent checkTaskCancelEvent) {
+    public void cancelTask(CheckTask checkTask) {
+        CheckTaskCancelEvent checkTaskCancelEvent = CheckTaskCancelEvent.builder().checkTask(checkTask).build();
         eventBus.post(checkTaskCancelEvent);
     }
+
     @Override
-    public void doContentPreCheck(PreCheckEvent preCheckEvent) {
+    public void doContentPreCheck(CheckTask checkTask) {
+        PreCheckEvent preCheckEvent = PreCheckEvent.builder()
+                .checkTask(checkTask)
+                .build();
         this.contentEventBus.post(preCheckEvent);
     }
 
     @Override
-    public void doParagraphCheck(CheckParagraphEvent checkParagraphEvent) {
+    public void doParagraphCheck(CheckTask checkTask) {
+        CheckParagraphEvent checkParagraphEvent = CheckParagraphEvent.builder()
+                .checkTask(checkTask)
+                .build();
         this.contentEventBus.post(checkParagraphEvent);
     }
 
     @Override
-    public void doCollectResult(CollectResultEvent collectResultEvent) {
-        this.contentEventBus.post(collectResultEvent);
+    public void doCollectResult(CheckTask checkTask) {
+        CollectResultEvent event = CollectResultEvent.builder()
+                .checkTask(checkTask)
+                .build();
+        this.contentEventBus.post(event);
     }
 
     @Override
-    public void doGenerateReport(CollectResultEvent collectResultEvent) {
+    public void doGenerateReport(CheckTask checkTask) {
 
     }
 }

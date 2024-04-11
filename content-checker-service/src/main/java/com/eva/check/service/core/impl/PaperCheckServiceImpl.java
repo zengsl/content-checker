@@ -25,8 +25,7 @@ import com.eva.check.service.config.CheckProperties;
 import com.eva.check.service.core.PaperCheckService;
 import com.eva.check.service.core.PaperCollectService;
 import com.eva.check.service.core.SimilarPaperService;
-import com.eva.check.service.event.CheckTaskStartEvent;
-import com.eva.check.service.mq.producer.SendMqService;
+import com.eva.check.service.flow.ICheckTaskFlow;
 import com.eva.check.service.support.CheckPaperService;
 import com.eva.check.service.support.CheckReportService;
 import com.eva.check.service.support.CheckRequestService;
@@ -68,9 +67,10 @@ public class PaperCheckServiceImpl implements PaperCheckService {
     private final CheckReportService checkReportService;
     private final CheckPaperService checkPaperService;
     private final SimilarPaperService similarPaperService;
-    private final SendMqService sendMqService;
     private final CheckProperties checkProperties;
     private final ISpringTemplateEngine templateEngine;
+    private final ICheckTaskFlow checkTaskFlow;
+
 
     @Override
     public String createPaperCheck(PaperCheckReq paperCheckReq) throws SystemException {
@@ -120,13 +120,8 @@ public class PaperCheckServiceImpl implements PaperCheckService {
         checkRequest.setStatus(CheckReqStatus.DOING.getValue());
         this.checkRequestService.updateById(checkRequest);
 
-        // 将任务推送MQ 进行异步处理 TODO
-        CheckTaskStartEvent checkTaskStartEvent = CheckTaskStartEvent.builder()
-                .checkTasks(checkTaskList)
-                .checkId(checkRequest.getCheckId())
-                .taskNum(checkRequest.getTaskNum())
-                .build();
-        sendMqService.startTask(checkTaskStartEvent);
+        // 开启任务
+        this.checkTaskFlow.processAllTask(checkRequest.getCheckId(), checkTaskList);
         return checkRequest.getCheckNo();
     }
 

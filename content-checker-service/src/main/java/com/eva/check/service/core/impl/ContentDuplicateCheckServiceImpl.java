@@ -14,11 +14,8 @@ import com.eva.check.pojo.dto.SimilarPaperParagraph;
 import com.eva.check.service.config.CheckProperties;
 import com.eva.check.service.core.DuplicateCheckService;
 import com.eva.check.service.core.PaperCoreService;
-import com.eva.check.service.event.CheckParagraphEvent;
-import com.eva.check.service.event.CheckTaskCancelEvent;
-import com.eva.check.service.event.CheckTaskFinishEvent;
-import com.eva.check.service.event.CollectResultEvent;
-import com.eva.check.service.mq.producer.SendMqService;
+import com.eva.check.service.flow.IContentCheckTaskBaseFlow;
+import com.eva.check.service.flow.enums.ContentCheckState;
 import com.eva.check.service.support.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -57,15 +54,14 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
     private final CheckPaperPairService checkPaperPairService;
     private final CheckProperties checkProperties;
 
-    private SendMqService sendMqService;
-
+    private IContentCheckTaskBaseFlow contentCheckTaskFlow;
     private final Map<Long, List<String>> sentenceTokenMap = Maps.newConcurrentMap();
     private final Map<Long, Map<String, Float>> sentenceWordFrequencyPool = Maps.newConcurrentMap();
 
     @Autowired
     @Lazy
-    public void setSendMqService(SendMqService sendMqService) {
-        this.sendMqService = sendMqService;
+    public void setContentCheckTaskFlow(IContentCheckTaskBaseFlow contentCheckTaskFlow) {
+        this.contentCheckTaskFlow = contentCheckTaskFlow;
     }
 
     /**
@@ -82,8 +78,7 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
         List<CheckParagraph> checkParagraphList = this.checkParagraphService.getByTaskId(checkTask.getTaskId());
         if (CollectionUtil.isEmpty(checkParagraphList)) {
             log.warn("[ContentEventBusListenerImpl] 无论文段落，不执行预检查");
-            CheckTaskCancelEvent checkTaskCancelEvent = CheckTaskCancelEvent.builder().checkTask(checkTask).build();
-            this.sendMqService.cancelTask(checkTaskCancelEvent);
+            this.contentCheckTaskFlow.processCancel(checkTask);
             return;
         }
 
@@ -126,8 +121,7 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
         if (CollectionUtil.isEmpty(checkParagraphListPair)) {
             // 如果没有相似论文，则直接结束当前任务并设置相似度为0
             checkTask.setSimilarity(ContentCheckConstant.SIMILARITY_ZERO);
-            CheckTaskFinishEvent checkTaskFinishEvent = CheckTaskFinishEvent.builder().checkTask(checkTask).build();
-            this.sendMqService.finishTask(checkTaskFinishEvent);
+            this.contentCheckTaskFlow.processFinish(checkTask);
         } else {
             // 暂时不提前生成check_paper_pair，待最终结果计算出来之后再新增。否则，到时还需通过update去设置similarity
             // 生成比对论文对 check_paper_pair
@@ -145,11 +139,9 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
 
             // 生成比对段落对 check_paragraph_pair
             this.checkParagraphPairService.initCompareList(checkParagraphListPair);
-            // 触发比对事件事件
-            CheckParagraphEvent checkParagraphEvent = CheckParagraphEvent.builder()
-                    .checkTask(checkTask)
-                    .build();
-            this.sendMqService.doParagraphCheck(checkParagraphEvent);
+
+            contentCheckTaskFlow.processStateNext(checkTask, ContentCheckState.PRE_CHECK);
+
         }
     }
 
@@ -283,11 +275,11 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
 
         // 汇总段落检测对的结果
         this.checkParagraphPairService.updateBatchById(checkParagraphPairList);
-        // 发送结果汇总事件。
-        CollectResultEvent event = CollectResultEvent.builder()
-                .checkTask(checkTask)
-                .build();
-        this.sendMqService.doCollectResult(event);
+
+
+        contentCheckTaskFlow.processStateNext(checkTask, ContentCheckState.PARAGRAPH_CHECK);
+
+
     }
 
             /*ThreadFactory threadFactory = new ThreadFactoryBuilder()
@@ -350,10 +342,7 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
         // 段落相似度综合
         double taskSimilarity = SimilarUtil.formatSimilarity(paragraphSimilarityCounter / checkParagraphList.size());
         checkTask.setSimilarity(taskSimilarity);
-        CheckTaskFinishEvent checkTaskFinishEvent = CheckTaskFinishEvent.builder()
-                .checkTask(checkTask)
-                .build();
-        this.sendMqService.finishTask(checkTaskFinishEvent);
+        contentCheckTaskFlow.processStateNext(checkTask, ContentCheckState.COLLECT_RESULT);
     }
 
 

@@ -1,6 +1,5 @@
 package com.eva.check.service.core.impl;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import com.eva.check.pojo.dto.PaperAddReq;
 import com.eva.check.service.config.ContentCheckAutoConfiguration;
 import com.eva.check.service.core.PaperCollectService;
@@ -30,9 +29,6 @@ public class PaperDataCreatorTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
-
-    @Autowired
-    private  ElasticsearchClient esClient;
 
     @Autowired
 

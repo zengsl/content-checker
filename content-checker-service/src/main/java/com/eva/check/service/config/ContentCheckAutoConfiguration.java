@@ -9,7 +9,6 @@ import co.elastic.clients.transport.rest_client.RestClientOptions;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
 import com.eva.check.common.constant.MessageQueueConstants;
 import com.eva.check.service.core.*;
-import com.eva.check.service.core.CheckTaskService;
 import com.eva.check.service.core.impl.DefaultCheckTaskServiceImpl;
 import com.eva.check.service.core.impl.DefaultSimilarTextRuleImpl;
 import com.eva.check.service.core.impl.DefaultSimilarityStrategy;
@@ -20,7 +19,10 @@ import com.eva.check.service.mq.producer.SendMqService;
 import com.eva.check.service.mq.producer.eventbus.EventBusSendMqServiceImpl;
 import com.eva.check.service.mq.producer.eventbus.listener.CheckTaskEventBusListener;
 import com.eva.check.service.mq.producer.eventbus.listener.ContentCheckEventBusListener;
-import com.eva.check.service.support.*;
+import com.eva.check.service.support.CheckRequestService;
+import com.eva.check.service.support.PaperInfoService;
+import com.eva.check.service.support.PaperParagraphService;
+import com.eva.check.service.support.PaperSimHashIndexService;
 import com.eva.check.service.support.impl.MemoryPaperSimHashIndexServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -38,6 +40,7 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -54,6 +57,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -69,6 +73,8 @@ import java.util.function.Consumer;
 @EnableCaching
 @EnableElasticsearchRepositories("com.eva.check.service.es.repository")
 public class ContentCheckAutoConfiguration extends ElasticsearchConfiguration {
+
+    private final ElasticsearchProperties elasticsearchProperties;
 
     @Bean
     SimilarTextRender paragraphRender() {
@@ -132,13 +138,20 @@ public class ContentCheckAutoConfiguration extends ElasticsearchConfiguration {
     @Nonnull
     @Override
     public ClientConfiguration clientConfiguration() {
+        List<String> uris = elasticsearchProperties.getUris();
+        String url = "localhost:9200";
+        if (uris == null) {
+            throw new RuntimeException("需要配置spring.elasticsearch相关信息");
+        }
+        if(uris.get(0).startsWith("http://")) {
+            url = uris.get(0).replace("http://", "");
+        } else if (uris.get(0).startsWith("https://")) {
+            url = uris.get(0).replace("https://", "");
+        }
         return ClientConfiguration.builder()
-                .connectedTo("localhost:9200")
+                .connectedTo(url)
                 .usingSsl()
-                .withBasicAuth("elastic", "gwO+DhAFKGhJmIcI3798")
-                /*.withClientConfigurer(ElasticsearchClients.ElasticsearchRestClientConfigurationCallback.from(clientBuilder->{
-                    return clientBuilder;
-                }))*/
+                .withBasicAuth(elasticsearchProperties.getUsername(), elasticsearchProperties.getPassword())
                 .build();
     }
 
