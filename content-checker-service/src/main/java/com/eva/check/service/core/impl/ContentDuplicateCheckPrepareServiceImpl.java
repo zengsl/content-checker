@@ -95,8 +95,12 @@ public class ContentDuplicateCheckPrepareServiceImpl implements DuplicateCheckPr
         }
         // 批量插入句子
         this.checkSentenceService.saveBatch(checkSentenceList);
-
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+                TransactionSynchronization.super.afterCompletion(status);
+            }
+
             @Override
             public void afterCommit() {
                 // 触发预检测任务事件

@@ -32,9 +32,15 @@ public interface CheckTaskService extends IService<CheckTask> {
     CheckTask findCheckTask(String checkNo, String checkType);
 
     List<CheckTask> findCheckTask(String checkNo, List<String> statusList);
+    List<CheckTask> findCheckTask(Long checkId, List<String> statusList);
 
     default Integer findFinishCheckTask(String checkNo) {
         List<CheckTask> checkTaskList = this.findCheckTask(checkNo, List.of(CheckTaskStatus.DONE.getValue(), CheckTaskStatus.CANCEL.getValue()));
         return CollectionUtil.isEmpty(checkTaskList) ? 0 : checkTaskList.size();
+    }
+
+    default Long findFinishCheckTask(Long checkId) {
+        List<CheckTask> checkTaskList = this.findCheckTask(checkId, List.of(CheckTaskStatus.DONE.getValue(), CheckTaskStatus.CANCEL.getValue()));
+        return CollectionUtil.isEmpty(checkTaskList) ? 0 :  Long.valueOf(checkTaskList.size());
     }
 }

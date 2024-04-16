@@ -9,10 +9,7 @@ import co.elastic.clients.transport.rest_client.RestClientOptions;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
 import com.eva.check.common.constant.MessageQueueConstants;
 import com.eva.check.service.core.*;
-import com.eva.check.service.core.impl.DefaultCheckTaskExecuteServiceImpl;
-import com.eva.check.service.core.impl.DefaultSimilarTextRuleImpl;
-import com.eva.check.service.core.impl.DefaultSimilarityStrategy;
-import com.eva.check.service.core.impl.ParagraphRenderImpl;
+import com.eva.check.service.core.impl.*;
 import com.eva.check.service.mq.consumer.eventbus.CheckTaskEventBusListenerImpl;
 import com.eva.check.service.mq.consumer.eventbus.ContentCheckEventBusListenerImpl;
 import com.eva.check.service.mq.consumer.rocket.CheckTaskRocketListenerImpl;
@@ -22,10 +19,7 @@ import com.eva.check.service.mq.producer.eventbus.EventBusSendMqServiceImpl;
 import com.eva.check.service.mq.producer.eventbus.listener.CheckTaskEventBusListener;
 import com.eva.check.service.mq.producer.eventbus.listener.ContentCheckEventBusListener;
 import com.eva.check.service.mq.producer.rocket.RocketSendMqServiceImpl;
-import com.eva.check.service.support.CheckRequestService;
-import com.eva.check.service.support.PaperInfoService;
-import com.eva.check.service.support.PaperParagraphService;
-import com.eva.check.service.support.PaperSimHashIndexService;
+import com.eva.check.service.support.*;
 import com.eva.check.service.support.impl.MemoryPaperSimHashIndexServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -54,6 +48,7 @@ import org.springframework.data.elasticsearch.client.ClientConfiguration;
 import org.springframework.data.elasticsearch.client.elc.AutoCloseableElasticsearchClient;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchConfiguration;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -105,8 +100,12 @@ public class ContentCheckAutoConfiguration extends ElasticsearchConfiguration {
 
 
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnProperty(prefix = "content-check",name = "mq", havingValue = MessageQueueConstants.EVENT_BUS, matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "content-check", name = "mq", havingValue = MessageQueueConstants.EVENT_BUS, matchIfMissing = true)
     protected static class GuavaStrategy {
+        @Bean
+        CheckTaskExecuteService checkTaskExecuteService(CheckRequestService checkRequestService, CheckTaskService checkTaskService, DuplicateCheckPrepareService duplicateCheckPrepareService) {
+            return new DefaultCheckTaskExecuteServiceImpl(checkRequestService, checkTaskService, duplicateCheckPrepareService);
+        }
 
         @Bean
         SendMqService sendMqService(CheckTaskEventBusListener checkTaskEventBusListener, ContentCheckEventBusListener contentCheckEventBusListener) {
@@ -126,8 +125,14 @@ public class ContentCheckAutoConfiguration extends ElasticsearchConfiguration {
     }
 
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnProperty(prefix = "content-check",name = "mq", havingValue = MessageQueueConstants.ROCKET_MQ)
+    @ConditionalOnProperty(prefix = "content-check", name = "mq", havingValue = MessageQueueConstants.ROCKET_MQ)
     protected static class RocketStrategy {
+
+        @Bean
+        CheckTaskExecuteService checkTaskExecuteService(CheckRequestService checkRequestService, CheckTaskService checkTaskService, DuplicateCheckPrepareService duplicateCheckPrepareService, RedisTemplate<String, Integer> redisTemplate) {
+            return new RedisCheckTaskExecuteServiceImpl(checkRequestService, checkTaskService, duplicateCheckPrepareService, redisTemplate);
+        }
+
         @Bean
         SendMqService sendMqService(RocketMQTemplate rocketMqTemplate) {
             return new RocketSendMqServiceImpl(rocketMqTemplate);
@@ -242,5 +247,6 @@ public class ContentCheckAutoConfiguration extends ElasticsearchConfiguration {
      * 默认时间格式
      */
     public static final String TIME_FORMAT = "HH:mm:ss";
+
 
 }

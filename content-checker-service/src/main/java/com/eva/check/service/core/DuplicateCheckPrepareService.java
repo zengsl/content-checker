@@ -10,5 +10,10 @@ import com.eva.check.pojo.CheckTask;
  */
 public interface DuplicateCheckPrepareService {
 
+    /**
+     * 执行方法
+     *
+     * @param checkTask 检测任务
+     */
     void execute(CheckTask checkTask);
 }

@@ -1,7 +1,6 @@
 package com.eva.check.service.core;
 
 import com.eva.check.pojo.CheckTask;
-import com.eva.check.pojo.dto.MqCheckTask;
 
 import java.util.List;
 
@@ -12,7 +11,25 @@ import java.util.List;
  * @date 2023/11/25 16:12
  */
 public interface CheckTaskExecuteService {
-    void startAllTask(Long checkId,List<CheckTask> checkTaskList);
+    /**
+     * 开启所有任务
+     *
+     * @param checkId       检测ID
+     * @param checkTaskList 任务列表
+     */
+    void startAllTask(Long checkId, List<CheckTask> checkTaskList);
+
+    /**
+     * 结束任务
+     *
+     * @param checkTask       任务
+     */
     void finishTask(CheckTask checkTask);
+
+    /**
+     * 取消任务
+     *
+     * @param checkTask       任务
+     */
     void cancelTask(CheckTask checkTask);
 }

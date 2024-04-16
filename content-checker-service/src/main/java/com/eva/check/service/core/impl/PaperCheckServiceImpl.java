@@ -86,6 +86,10 @@ public class PaperCheckServiceImpl implements PaperCheckService {
         checkRequest.setStatus(CheckReqStatus.INIT.getValue());
         // 保存check_request
         boolean save = this.checkRequestService.save(checkRequest);
+        if (!save) {
+            log.error("Error saving check request");
+            return null;
+        }
         // 生成checkPaper
         CheckPaper checkPaper = PaperCheckConverter.INSTANCE.paperCheckReq2CheckPaper(paperCheckReq);
         checkPaper.setCheckId(checkRequest.getCheckId());

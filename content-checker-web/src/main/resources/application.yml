@@ -11,6 +11,12 @@ spring:
     password: "gwO+DhAFKGhJmIcI3798"
   thymeleaf:
     cache: false
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      #password: jxncredis
+      database: 1
 
 
 
@@ -40,7 +46,8 @@ content-check:
 # rabbitmq 特殊配置
 rocketmq:
   # 阿里云测试环境
-  name-server: http://10.0.0.96:9876
+  name-server: http://localhost:9876
+#  name-server: http://10.0.0.96:9876
   #  name-server: localhost:9876
   producer:
     group: sfis-content-checker-producer-group

@@ -6,10 +6,13 @@ import com.eva.check.service.mq.producer.SendMqService;
 import com.eva.check.service.mq.producer.eventbus.event.*;
 import com.eva.check.service.mq.producer.eventbus.listener.CheckTaskEventBusListener;
 import com.eva.check.service.mq.producer.eventbus.listener.ContentCheckEventBusListener;
+import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.Executors;
 
 
 /**
@@ -22,8 +25,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class EventBusSendMqServiceImpl implements SendMqService {
 
-    private final EventBus eventBus = new EventBus();
-    private final EventBus contentEventBus = new EventBus();
+    private final EventBus eventBus = new AsyncEventBus(Executors.newCachedThreadPool());
+
+    private final EventBus contentEventBus = new AsyncEventBus(Executors.newCachedThreadPool());
 
     private final CheckTaskEventBusListener checkTaskEventBusListener;
     private final ContentCheckEventBusListener contentCheckEventBusListener;

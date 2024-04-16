@@ -1,12 +1,16 @@
 package com.eva.check.pojo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.eva.check.pojo.common.BaseEntity;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.io.Serial;
+import java.io.Serializable;
 
 /**
  * 论文句子
@@ -18,7 +22,11 @@ import lombok.EqualsAndHashCode;
 @Data
 @TableName(value ="paper_sentence")
 @Builder
-public class PaperSentence extends BaseEntity {
+public class PaperSentence extends BaseEntity implements Serializable {
+
+    @Serial
+    @TableField(exist = false)
+    private static final long serialVersionUID = 8155246687510534856L;
 
     /**
      * 句子主键

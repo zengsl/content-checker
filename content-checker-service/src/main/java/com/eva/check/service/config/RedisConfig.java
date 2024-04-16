@@ -1,0 +1,126 @@
+package com.eva.check.service.config;
+
+import cn.hutool.core.util.ReflectUtil;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cache.annotation.CachingConfigurerSupport;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
+
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.TimeZone;
+
+import static com.eva.check.service.config.ContentCheckAutoConfiguration.*;
+
+@Configuration
+@EnableCaching
+@AutoConfigureBefore(RedisAutoConfiguration.class)
+/*
+@EnableConfigurationProperties(EnvironmentProperties.class)
+*/
+public class RedisConfig extends CachingConfigurerSupport {
+
+    @Bean
+    public RedisTemplate<String, Integer> redisTemplate(RedisConnectionFactory connectionFactory, @Qualifier("keySerializer") RedisSerializer<String> keySerializer, @Qualifier("valueSerializer") RedisSerializer<?> valueSerializer) {
+        RedisTemplate<String, Integer> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+
+        // TODO 待改成jackson，并移除FastJson依赖
+//        RedisSerializer<?> serializer = new FastJson2JsonRedisSerializer<>(Object.class);
+
+        // 使用StringRedisSerializer来序列化和反序列化redis的key值
+        template.setKeySerializer(keySerializer);
+        template.setValueSerializer(valueSerializer);
+        template.setStringSerializer(keySerializer);
+
+        // Hash的key也采用StringRedisSerializer的序列化方式
+        template.setHashKeySerializer(keySerializer);
+        template.setHashValueSerializer(valueSerializer);
+//        template.setScriptExecutor(new ScriptExecutorEnhance<>(template));
+        template.afterPropertiesSet();
+        return template;
+    }
+
+
+    /*
+    @Bean("valueSerializer")
+    public RedisSerializer<?> valueSerializer() {
+        // TODO 待改成jackson，并移除FastJson依赖
+        return new FastJson2JsonRedisSerializer<>(Object.class);
+    }*/
+
+//    @ConditionalOnProperty(name = {"sfis.env.enabled-isolation", "sfis.env.enabledIsolation"}, havingValue = "false")
+    @Bean("keySerializer")
+    public RedisSerializer<String> keySerializer() {
+        return new StringRedisSerializer();
+    }
+
+    /*@ConditionalOnProperty(name = {"sfis.env.enabled-isolation", "sfis.env.enabledIsolation"}, havingValue = "true", matchIfMissing = true)
+    @Bean("keySerializer")
+    public RedisSerializer<String> envIsolationKeySerializer(EnvironmentProperties environmentProperties) {
+        return new EnvironmentIsolationSerializer(environmentProperties);
+    }*/
+
+    @Bean("valueSerializer")
+    public static RedisSerializer<?> buildRedisSerializer() {
+        // 使用Spring默认的序列化器，可考虑自定义并使用JacksonUtil来实现
+        RedisSerializer<Object> json = RedisSerializer.json();
+        // 解决 LocalDateTime 的序列化
+        ObjectMapper objectMapper = (ObjectMapper) ReflectUtil.getFieldValue(json, "mapper");
+
+        // 以下配置参考JacksonUtil
+        //java8日期 Local系列序列化和反序列化模块
+        JavaTimeModule javaTimeModule = new JavaTimeModule();
+        //序列化
+        javaTimeModule.addSerializer(LocalDate.class, new LocalDateSerializer(DateTimeFormatter.ofPattern(DATE_FORMAT)));
+        javaTimeModule.addSerializer(LocalTime.class, new LocalTimeSerializer(DateTimeFormatter.ofPattern(TIME_FORMAT)));
+        javaTimeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)));
+        //反序列化
+        javaTimeModule.addDeserializer(LocalDate.class, new LocalDateDeserializer(DateTimeFormatter.ofPattern(DATE_FORMAT)));
+        javaTimeModule.addDeserializer(LocalTime.class, new LocalTimeDeserializer(DateTimeFormatter.ofPattern(TIME_FORMAT)));
+        javaTimeModule.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)));
+
+//        objectMapper.registerModule(new ParameterNamesModule()).registerModule(new Jdk8Module()).registerModule(javaTimeModule);
+
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        objectMapper.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
+        // 忽略json字符串中不识别的属性
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        // 忽略无法转换的对象
+        objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        // PrettyPrinter 格式化输出
+        objectMapper.configure(SerializationFeature.INDENT_OUTPUT, false);
+        // NULL不参与序列化
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        // 指定时区
+        objectMapper.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
+
+        // Date日期类型字符串全局处理, 默认格式为：yyyy-MM-dd HH:mm:ss
+        // 局部处理某个Date属性字段接收或返回日期格式yyyy-MM-dd, 可采用@JsonFormat(pattern = "yyyy-MM-dd", timezone="GMT+8")注解标注该属性
+        objectMapper.setDateFormat(new SimpleDateFormat(DATE_TIME_FORMAT));
+        return json;
+    }
+}
