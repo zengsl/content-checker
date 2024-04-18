@@ -82,15 +82,20 @@ public class RedisConfig implements CachingConfigurer {
         RedisCacheConfiguration defaultCacheConfig = createDefaultRedisCacheConfiguration(classLoader);
         log.info("设置redis缓存的默认失效时间，失效时间默认为：{}天", defaultCacheConfig.getTtl().toDays());
         // 针对不同cacheName，设置不同的失效时间，map的key是缓存名称（注解设定的value/cacheNames），value是缓存的失效配置
+        Map<String, RedisCacheConfiguration> initialCacheConfiguration = getInitialCacheConfigurationMap(classLoader);
+        return (builder) -> builder
+                .cacheDefaults(defaultCacheConfig)
+                .withInitialCacheConfigurations(initialCacheConfiguration);
+
+    }
+
+    private Map<String, RedisCacheConfiguration> getInitialCacheConfigurationMap(ClassLoader classLoader) {
         Map<String, RedisCacheConfiguration> initialCacheConfiguration = new HashMap<>(8);
         // 设定失效时间
         initialCacheConfiguration.put(CacheConstant.PARAGRAPH_SENTENCE_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(7)));
         initialCacheConfiguration.put(CacheConstant.SENTENCE_TOKEN_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(7)));
         initialCacheConfiguration.put(CacheConstant.PARAGRAPH_TOKEN_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(7)));
-        return (builder) -> builder
-                .cacheDefaults(defaultCacheConfig)
-                .withInitialCacheConfigurations(initialCacheConfiguration);
-
+        return initialCacheConfiguration;
     }
 
     private static RedisCacheConfiguration createDefaultRedisCacheConfiguration(ClassLoader classLoader) {
@@ -99,7 +104,7 @@ public class RedisConfig implements CachingConfigurer {
                 .entryTtl(Duration.ofDays(15))
                 // 在缓存名称前加上前缀
                 .computePrefixWith(cacheName -> "default:" + cacheName + ":");
-        defaultCacheConfig = setDefaultSerialize(classLoader, defaultCacheConfig);
+        defaultCacheConfig = getConfigWithDefaultSerialize(classLoader, defaultCacheConfig);
         return defaultCacheConfig;
     }
 
@@ -110,49 +115,14 @@ public class RedisConfig implements CachingConfigurer {
      */
     private RedisCacheConfiguration getDefaultSimpleConfiguration(ClassLoader classLoader) {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig();
-        config = setDefaultSerialize(classLoader, config);
+        config = getConfigWithDefaultSerialize(classLoader, config);
         config.computePrefixWith(cacheName -> cacheName + ":");
         return config;
     }
 
-    private static RedisCacheConfiguration setDefaultSerialize(ClassLoader classLoader, RedisCacheConfiguration defaultCacheConfig) {
+    private static RedisCacheConfiguration getConfigWithDefaultSerialize(ClassLoader classLoader, RedisCacheConfiguration defaultCacheConfig) {
         return defaultCacheConfig.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new JdkSerializationRedisSerializer(classLoader)));
     }
-
-    /**
-     * 缓存管理
-     *
-     * @return 返回缓存管理信息
-     */
-
-    /*
-    @Bean
-    public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
-        // 缓存配置
-        RedisCacheConfiguration defaultCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
-                // 默认没有特殊指定的缓存，设置失效时间为1天
-                .entryTtl(Duration.ofDays(1))
-                // 在缓存名称前加上前缀
-                .computePrefixWith(cacheName -> "default:" + cacheName + ":");
-        log.info("设置redis缓存的默认失效时间，失效时间默认为：{}天", defaultCacheConfig.getTtl().toDays());
-        // 针对不同cacheName，设置不同的失效时间，map的key是缓存名称（注解设定的value/cacheNames），value是缓存的失效配置
-        Map<String, RedisCacheConfiguration> initialCacheConfiguration = new HashMap<>(8);
-        // 设定失效时间
-        initialCacheConfiguration.put(CacheConstant.PARAGRAPH_SENTENCE_CACHE_KEY, getDefaultSimpleConfiguration().entryTtl(Duration.ofDays(7)));
-        initialCacheConfiguration.put(CacheConstant.SENTENCE_TOKEN_CACHE_KEY, getDefaultSimpleConfiguration().entryTtl(Duration.ofDays(7)));
-        initialCacheConfiguration.put(CacheConstant.PARAGRAPH_TOKEN_CACHE_KEY, getDefaultSimpleConfiguration().entryTtl(Duration.ofDays(7)));
-
-        // ...如果有其他的不同cacheName需要控制失效时间，以此类推即可进行添加
-        return RedisCacheManager.builder(redisConnectionFactory)
-                // 设置缓存默认失效时间配置，也就是动态或者未指定的缓存将会使用当前配置
-                .cacheDefaults(defaultCacheConfig)
-                // 不同不同cacheName的个性化配置
-                .withInitialCacheConfigurations(initialCacheConfiguration).build();
-
-    }*/
-
-
-
 
     /*
     @Bean("valueSerializer")
