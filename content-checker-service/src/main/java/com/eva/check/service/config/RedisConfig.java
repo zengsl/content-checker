@@ -16,16 +16,18 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.cache.RedisCacheManagerBuilderCustomizer;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachingConfigurer;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
-import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -72,11 +74,58 @@ public class RedisConfig implements CachingConfigurer {
         return template;
     }
 
+
+    @Bean
+    public RedisCacheManagerBuilderCustomizer myRedisCacheManagerBuilderCustomizer(ResourceLoader resourceLoader) {
+        // 缓存配置
+        ClassLoader classLoader = resourceLoader.getClassLoader();
+        RedisCacheConfiguration defaultCacheConfig = createDefaultRedisCacheConfiguration(classLoader);
+        log.info("设置redis缓存的默认失效时间，失效时间默认为：{}天", defaultCacheConfig.getTtl().toDays());
+        // 针对不同cacheName，设置不同的失效时间，map的key是缓存名称（注解设定的value/cacheNames），value是缓存的失效配置
+        Map<String, RedisCacheConfiguration> initialCacheConfiguration = new HashMap<>(8);
+        // 设定失效时间
+        initialCacheConfiguration.put(CacheConstant.PARAGRAPH_SENTENCE_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(7)));
+        initialCacheConfiguration.put(CacheConstant.SENTENCE_TOKEN_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(7)));
+        initialCacheConfiguration.put(CacheConstant.PARAGRAPH_TOKEN_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(7)));
+        return (builder) -> builder
+                .cacheDefaults(defaultCacheConfig)
+                .withInitialCacheConfigurations(initialCacheConfiguration);
+
+    }
+
+    private static RedisCacheConfiguration createDefaultRedisCacheConfiguration(ClassLoader classLoader) {
+        RedisCacheConfiguration defaultCacheConfig = RedisCacheConfiguration.defaultCacheConfig(classLoader)
+                // 默认没有特殊指定的缓存，设置失效时间为15天
+                .entryTtl(Duration.ofDays(15))
+                // 在缓存名称前加上前缀
+                .computePrefixWith(cacheName -> "default:" + cacheName + ":");
+        defaultCacheConfig = setDefaultSerialize(classLoader, defaultCacheConfig);
+        return defaultCacheConfig;
+    }
+
+    /**
+     * 覆盖默认的构造key[默认拼接的时候是两个冒号（::）]，否则会多出一个冒号
+     *
+     * @return 返回缓存配置信息
+     */
+    private RedisCacheConfiguration getDefaultSimpleConfiguration(ClassLoader classLoader) {
+        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig();
+        config = setDefaultSerialize(classLoader, config);
+        config.computePrefixWith(cacheName -> cacheName + ":");
+        return config;
+    }
+
+    private static RedisCacheConfiguration setDefaultSerialize(ClassLoader classLoader, RedisCacheConfiguration defaultCacheConfig) {
+        return defaultCacheConfig.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new JdkSerializationRedisSerializer(classLoader)));
+    }
+
     /**
      * 缓存管理
      *
      * @return 返回缓存管理信息
      */
+
+    /*
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
         // 缓存配置
@@ -100,16 +149,9 @@ public class RedisConfig implements CachingConfigurer {
                 // 不同不同cacheName的个性化配置
                 .withInitialCacheConfigurations(initialCacheConfiguration).build();
 
-    }
+    }*/
 
-    /**
-     * 覆盖默认的构造key[默认拼接的时候是两个冒号（::）]，否则会多出一个冒号
-     *
-     * @return 返回缓存配置信息
-     */
-    private RedisCacheConfiguration getDefaultSimpleConfiguration() {
-        return RedisCacheConfiguration.defaultCacheConfig().computePrefixWith(cacheName -> cacheName + ":");
-    }
+
 
 
     /*
