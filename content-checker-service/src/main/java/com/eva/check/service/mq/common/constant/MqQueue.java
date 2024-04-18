@@ -1,6 +1,7 @@
 package com.eva.check.service.mq.common.constant;
 
 /**
+ * Mq常量类
  *
  * @author zengsl
  * @date 2024/4/15 10:09
@@ -22,6 +23,8 @@ public interface MqQueue {
     String PARAGRAPH_CHECK_TAG = "paragraph_check";
     String COLLECT_RESULT_TAG = "collect_check_result";
     String GENERATE_REPORT_TAG = "generate_check_report";
+
+    int MAX_RECONSUME_TIMES = 8;
 
 
 }

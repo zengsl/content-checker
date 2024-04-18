@@ -2,6 +2,7 @@ package com.eva.check.service.support.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.eva.check.common.constant.CacheConstant;
 import com.eva.check.mapper.PaperSentenceMapper;
 import com.eva.check.pojo.PaperSentence;
 import com.eva.check.service.support.PaperSentenceService;
@@ -21,9 +22,9 @@ public class PaperSentenceServiceImpl extends ServiceImpl<PaperSentenceMapper, P
     implements PaperSentenceService {
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "paper:paragraph:sentence", key = "#paragraphId")
+    @Cacheable(value = CacheConstant.PARAGRAPH_SENTENCE_CACHE_KEY, key = "#paragraphId")
     @Override
-    public List<PaperSentence> getByParagraphId(Long paragraphId) {
+    public List<PaperSentence> getByParagraphIdFromCache(Long paragraphId) {
         // 先使用Spring 内存缓存
         LambdaQueryWrapper<PaperSentence> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(PaperSentence::getParagraphId, paragraphId);

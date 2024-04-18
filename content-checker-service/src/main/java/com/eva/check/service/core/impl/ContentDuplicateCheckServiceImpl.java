@@ -194,7 +194,7 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
             }
 
             List<CheckSentencePair> checkSentencePairList = Lists.newArrayListWithCapacity(16);
-            List<PaperSentence> paperSentenceList = this.paperSentenceService.getByParagraphId(checkParagraphPair.getTargetParaId());
+            List<PaperSentence> paperSentenceList = this.paperSentenceService.getByParagraphIdFromCache(checkParagraphPair.getTargetParaId());
             // 相似度累加器
             double similarityCounter = 0D;
             // 待检测句子按照每一句进行处理

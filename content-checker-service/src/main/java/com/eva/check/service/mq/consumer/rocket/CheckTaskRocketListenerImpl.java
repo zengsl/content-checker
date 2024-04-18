@@ -24,7 +24,8 @@ public class CheckTaskRocketListenerImpl {
     @ConditionalOnProperty(prefix = "content-check",name = "mq", havingValue = MessageQueueConstants.ROCKET_MQ)
     @RocketMQMessageListener(topic = MqQueue.CONTENT_CHECK_TOPIC,
             selectorExpression= MqQueue.START_TASK_TAG,
-            consumerGroup = MqQueue.START_TASK_CONSUMER_GROUP
+            consumerGroup = MqQueue.START_TASK_CONSUMER_GROUP,
+            maxReconsumeTimes = MqQueue.MAX_RECONSUME_TIMES
     )
     @Service
     @RequiredArgsConstructor
@@ -41,7 +42,8 @@ public class CheckTaskRocketListenerImpl {
     @ConditionalOnProperty(prefix = "content-check",name = "mq", havingValue = MessageQueueConstants.ROCKET_MQ)
     @RocketMQMessageListener(topic = MqQueue.CONTENT_CHECK_TOPIC,
             selectorExpression= MqQueue.FINISH_TASK_TAG,
-            consumerGroup = MqQueue.FINISH_TASK_CONSUMER_GROUP
+            consumerGroup = MqQueue.FINISH_TASK_CONSUMER_GROUP,
+            maxReconsumeTimes = MqQueue.MAX_RECONSUME_TIMES
     )
     @Service
     @RequiredArgsConstructor
@@ -58,7 +60,8 @@ public class CheckTaskRocketListenerImpl {
     @ConditionalOnProperty(prefix = "content-check",name = "mq", havingValue = MessageQueueConstants.ROCKET_MQ)
     @RocketMQMessageListener(topic = MqQueue.CONTENT_CHECK_TOPIC,
             selectorExpression= MqQueue.CANCEL_TASK_TAG,
-            consumerGroup = MqQueue.CANCEL_TASK_CONSUMER_GROUP
+            consumerGroup = MqQueue.CANCEL_TASK_CONSUMER_GROUP,
+            maxReconsumeTimes = MqQueue.MAX_RECONSUME_TIMES
     )
     @Service
     @RequiredArgsConstructor

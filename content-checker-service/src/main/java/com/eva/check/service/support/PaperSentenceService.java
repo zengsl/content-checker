@@ -13,6 +13,6 @@ import java.util.List;
 */
 public interface PaperSentenceService extends IService<PaperSentence> {
 
-    List<PaperSentence> getByParagraphId(Long paragraphId);
+    List<PaperSentence> getByParagraphIdFromCache(Long paragraphId);
 
 }

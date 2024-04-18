@@ -2,6 +2,7 @@ package com.eva.check.service.support.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.eva.check.common.constant.CacheConstant;
 import com.eva.check.mapper.PaperTokenMapper;
 import com.eva.check.pojo.PaperToken;
 import com.eva.check.service.support.PaperTokenService;
@@ -22,7 +23,7 @@ public class PaperTokenServiceImpl extends ServiceImpl<PaperTokenMapper, PaperTo
 
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "paper:paragraph:token", key = "#paragraphId")
+    @Cacheable(value = CacheConstant.PARAGRAPH_TOKEN_CACHE_KEY, key = "#paragraphId")
     @Override
     public List<PaperToken> getTokenByParagraphIdFromCache(Long paragraphId) {
         // 先使用Spring 内存缓存
@@ -32,7 +33,7 @@ public class PaperTokenServiceImpl extends ServiceImpl<PaperTokenMapper, PaperTo
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "paper:sentence:token", key = "#sentenceId")
+    @Cacheable(value = CacheConstant.SENTENCE_TOKEN_CACHE_KEY, key = "#sentenceId")
     @Override
     public List<PaperToken> getTokenBySentenceIdFromCache(Long sentenceId) {
         // 先使用Spring 内存缓存

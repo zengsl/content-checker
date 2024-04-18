@@ -34,7 +34,6 @@ public class RocketSendMqServiceImpl implements SendMqService {
     @Override
     public void finishTask(CheckTask checkTask) {
         sendMessage(MqQueue.FINISH_TASK_TAG, checkTask);
-
     }
 
     @Override
@@ -52,27 +51,35 @@ public class RocketSendMqServiceImpl implements SendMqService {
     @Override
     public void doParagraphCheck(CheckTask checkTask) {
         sendMessage(MqQueue.PARAGRAPH_CHECK_TAG, checkTask);
-
     }
 
     @Override
     public void doCollectResult(CheckTask checkTask) {
         sendMessage(MqQueue.COLLECT_RESULT_TAG, checkTask);
-
     }
 
     @Override
     public void doGenerateReport(CheckTask checkTask) {
         sendMessage(MqQueue.GENERATE_REPORT_TAG, checkTask);
-
     }
 
     <T> void sendMessage(String tag, T checkTask) {
-        String messageKey = NanoId.randomNanoId();
+        sendMessage(tag, checkTask, null);
+    }
+
+    <T> void sendMessage(String tag, T checkTask, String messageKey) {
+        if (messageKey == null || messageKey.isEmpty()) {
+            messageKey = NanoId.randomNanoId();
+        }
         String jsonValue = buildJson(checkTask);
         /*log.info("send message: {}; messageKey:{}", jsonValue, messageKey);*/
         String destination = String.join(":", MqQueue.CONTENT_CHECK_TOPIC, tag);
-        this.rocketMQTemplate.send(destination, MessageBuilder.withPayload(jsonValue).setHeader(RocketMQHeaders.KEYS, messageKey).build());
+        try {
+            this.rocketMQTemplate.send(destination, MessageBuilder.withPayload(jsonValue).setHeader(RocketMQHeaders.KEYS, messageKey).build());
+        } catch (Exception e) {
+            log.error("send message failed", e);
+            throw new RuntimeException(e);
+        }
     }
 
     <T> String buildJson(T checkTask) {

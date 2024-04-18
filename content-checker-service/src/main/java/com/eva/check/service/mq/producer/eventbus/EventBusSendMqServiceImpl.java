@@ -8,11 +8,14 @@ import com.eva.check.service.mq.producer.eventbus.listener.CheckTaskEventBusList
 import com.eva.check.service.mq.producer.eventbus.listener.ContentCheckEventBusListener;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.concurrent.Executors;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -25,9 +28,18 @@ import java.util.concurrent.Executors;
 @RequiredArgsConstructor
 public class EventBusSendMqServiceImpl implements SendMqService {
 
-    private final EventBus eventBus = new AsyncEventBus(Executors.newCachedThreadPool());
+    private final static int  CPU_CORE_NUM = Runtime.getRuntime().availableProcessors();
+    private final EventBus eventBus = new AsyncEventBus(new ThreadPoolExecutor(CPU_CORE_NUM * 2, CPU_CORE_NUM * 2 + 5,
+            60L, TimeUnit.SECONDS,
+            new ArrayBlockingQueue<>(100), new ThreadFactoryBuilder()
+            .setNameFormat("checkTaskEventBus-%d")
+            .build()));
 
-    private final EventBus contentEventBus = new AsyncEventBus(Executors.newCachedThreadPool());
+    private final EventBus contentEventBus = new AsyncEventBus(new ThreadPoolExecutor(CPU_CORE_NUM * 2, CPU_CORE_NUM * 2 + 5,
+            60L, TimeUnit.SECONDS,
+            new ArrayBlockingQueue<>(100), new ThreadFactoryBuilder()
+            .setNameFormat("contentCheckEventBus-%d")
+            .build()));
 
     private final CheckTaskEventBusListener checkTaskEventBusListener;
     private final ContentCheckEventBusListener contentCheckEventBusListener;

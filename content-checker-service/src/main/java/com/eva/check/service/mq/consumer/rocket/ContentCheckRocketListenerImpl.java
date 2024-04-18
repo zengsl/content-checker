@@ -24,7 +24,8 @@ public class ContentCheckRocketListenerImpl {
     @ConditionalOnProperty(prefix = "content-check",name = "mq", havingValue = MessageQueueConstants.ROCKET_MQ)
     @RocketMQMessageListener(topic = MqQueue.CONTENT_CHECK_TOPIC,
             selectorExpression= MqQueue.CONTENT_PRE_CHECK_TAG,
-            consumerGroup = MqQueue.CONTENT_PRE_CHECK_CONSUMER_GROUP
+            consumerGroup = MqQueue.CONTENT_PRE_CHECK_CONSUMER_GROUP,
+            maxReconsumeTimes = MqQueue.MAX_RECONSUME_TIMES
     )
     @Service
     @RequiredArgsConstructor
@@ -42,7 +43,8 @@ public class ContentCheckRocketListenerImpl {
     @ConditionalOnProperty(prefix = "content-check",name = "mq", havingValue = MessageQueueConstants.ROCKET_MQ)
     @RocketMQMessageListener(topic = MqQueue.CONTENT_CHECK_TOPIC,
             selectorExpression= MqQueue.PARAGRAPH_CHECK_TAG,
-            consumerGroup = MqQueue.PARAGRAPH_CHECK_CONSUMER_GROUP
+            consumerGroup = MqQueue.PARAGRAPH_CHECK_CONSUMER_GROUP,
+            maxReconsumeTimes = MqQueue.MAX_RECONSUME_TIMES
     )
     @Service
     @RequiredArgsConstructor
@@ -60,7 +62,8 @@ public class ContentCheckRocketListenerImpl {
     @Service
     @RocketMQMessageListener(topic = MqQueue.CONTENT_CHECK_TOPIC,
             selectorExpression= MqQueue.COLLECT_RESULT_TAG,
-            consumerGroup = MqQueue.COLLECT_RESULT_CONSUMER_GROUP
+            consumerGroup = MqQueue.COLLECT_RESULT_CONSUMER_GROUP,
+            maxReconsumeTimes = MqQueue.MAX_RECONSUME_TIMES
     )
     @RequiredArgsConstructor
     public static class ConsumerCollectResult implements RocketMQListener<CheckTask> {
@@ -77,7 +80,8 @@ public class ContentCheckRocketListenerImpl {
     @Service
     @RocketMQMessageListener(topic = MqQueue.CONTENT_CHECK_TOPIC,
             selectorExpression= MqQueue.GENERATE_REPORT_TAG,
-            consumerGroup = MqQueue.GENERATE_REPORT_CONSUMER_GROUP
+            consumerGroup = MqQueue.GENERATE_REPORT_CONSUMER_GROUP,
+            maxReconsumeTimes = MqQueue.MAX_RECONSUME_TIMES
     )
     public static class ConsumerGenerateReport implements RocketMQListener<CheckTask> {
         @Override

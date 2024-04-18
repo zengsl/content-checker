@@ -20,7 +20,6 @@ public class ParagraphRenderImpl implements SimilarTextRender {
         TextColor textColor = this.similarTextRule.computeTextColor(similarity);
         return  textColor.renderSentenceHtml(originalText
                 , sentenceId
-                , NumberUtil.decimalFormat("#.##%", similarity))
-               ;
+                , NumberUtil.decimalFormat("#.##%", similarity));
     }
 }

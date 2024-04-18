@@ -1,6 +1,7 @@
 package com.eva.check.service.config;
 
 import cn.hutool.core.util.ReflectUtil;
+import com.eva.check.common.constant.CacheConstant;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,44 +13,51 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cache.annotation.CachingConfigurerSupport;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CachingConfigurer;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TimeZone;
 
 import static com.eva.check.service.config.ContentCheckAutoConfiguration.*;
 
+/**
+ * @author zengsl
+ * @date 2024/4/17 11:32
+ */
 @Configuration
 @EnableCaching
 @AutoConfigureBefore(RedisAutoConfiguration.class)
 /*
 @EnableConfigurationProperties(EnvironmentProperties.class)
 */
-public class RedisConfig extends CachingConfigurerSupport {
+@Slf4j
+public class RedisConfig implements CachingConfigurer {
 
     @Bean
     public RedisTemplate<String, Integer> redisTemplate(RedisConnectionFactory connectionFactory, @Qualifier("keySerializer") RedisSerializer<String> keySerializer, @Qualifier("valueSerializer") RedisSerializer<?> valueSerializer) {
         RedisTemplate<String, Integer> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
-
-        // TODO 待改成jackson，并移除FastJson依赖
-//        RedisSerializer<?> serializer = new FastJson2JsonRedisSerializer<>(Object.class);
 
         // 使用StringRedisSerializer来序列化和反序列化redis的key值
         template.setKeySerializer(keySerializer);
@@ -64,6 +72,45 @@ public class RedisConfig extends CachingConfigurerSupport {
         return template;
     }
 
+    /**
+     * 缓存管理
+     *
+     * @return 返回缓存管理信息
+     */
+    @Bean
+    public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
+        // 缓存配置
+        RedisCacheConfiguration defaultCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
+                // 默认没有特殊指定的缓存，设置失效时间为1天
+                .entryTtl(Duration.ofDays(1))
+                // 在缓存名称前加上前缀
+                .computePrefixWith(cacheName -> "default:" + cacheName + ":");
+        log.info("设置redis缓存的默认失效时间，失效时间默认为：{}天", defaultCacheConfig.getTtl().toDays());
+        // 针对不同cacheName，设置不同的失效时间，map的key是缓存名称（注解设定的value/cacheNames），value是缓存的失效配置
+        Map<String, RedisCacheConfiguration> initialCacheConfiguration = new HashMap<>(8);
+        // 设定失效时间
+        initialCacheConfiguration.put(CacheConstant.PARAGRAPH_SENTENCE_CACHE_KEY, getDefaultSimpleConfiguration().entryTtl(Duration.ofDays(7)));
+        initialCacheConfiguration.put(CacheConstant.SENTENCE_TOKEN_CACHE_KEY, getDefaultSimpleConfiguration().entryTtl(Duration.ofDays(7)));
+        initialCacheConfiguration.put(CacheConstant.PARAGRAPH_TOKEN_CACHE_KEY, getDefaultSimpleConfiguration().entryTtl(Duration.ofDays(7)));
+
+        // ...如果有其他的不同cacheName需要控制失效时间，以此类推即可进行添加
+        return RedisCacheManager.builder(redisConnectionFactory)
+                // 设置缓存默认失效时间配置，也就是动态或者未指定的缓存将会使用当前配置
+                .cacheDefaults(defaultCacheConfig)
+                // 不同不同cacheName的个性化配置
+                .withInitialCacheConfigurations(initialCacheConfiguration).build();
+
+    }
+
+    /**
+     * 覆盖默认的构造key[默认拼接的时候是两个冒号（::）]，否则会多出一个冒号
+     *
+     * @return 返回缓存配置信息
+     */
+    private RedisCacheConfiguration getDefaultSimpleConfiguration() {
+        return RedisCacheConfiguration.defaultCacheConfig().computePrefixWith(cacheName -> cacheName + ":");
+    }
+
 
     /*
     @Bean("valueSerializer")
@@ -72,7 +119,7 @@ public class RedisConfig extends CachingConfigurerSupport {
         return new FastJson2JsonRedisSerializer<>(Object.class);
     }*/
 
-//    @ConditionalOnProperty(name = {"sfis.env.enabled-isolation", "sfis.env.enabledIsolation"}, havingValue = "false")
+    //    @ConditionalOnProperty(name = {"sfis.env.enabled-isolation", "sfis.env.enabledIsolation"}, havingValue = "false")
     @Bean("keySerializer")
     public RedisSerializer<String> keySerializer() {
         return new StringRedisSerializer();

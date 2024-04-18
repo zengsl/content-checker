@@ -9,6 +9,8 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Redis 检测任务执行器
  *
@@ -33,15 +35,17 @@ public class RedisCheckTaskExecuteServiceImpl extends BaseCheckTaskExecuteServic
 
     @Override
     protected void initTaskTotal(Long checkId, Long total) {
-        hashOperations.put("checkId:" + checkId, TOTAL_KEY, total);
+        hashOperations.put("Content_Check:Id:" + checkId, TOTAL_KEY, total);
+        redisTemplate.expire("Content_Check:Id:" + checkId, 3, TimeUnit.HOURS);
     }
 
     @Override
     protected boolean isTaskFinishedAfterAdd(Long checkId) {
         // 重启之后缓存可能是空的
         Long finishedTask;
-        Long total = hashOperations.get("checkId:" + checkId, TOTAL_KEY);
-        if (total == null || total == 0) {
+        Object total2 = hashOperations.get("Content_Check:Id:" + checkId, TOTAL_KEY);
+        Long total = total2 == null ? 0L : Long.parseLong(total2.toString()) ;
+        if (total == 0) {
             CheckRequest checkRequest = getCheckRequestService().getById(checkId);
             total = Long.valueOf(checkRequest.getTaskNum());
             initTaskTotal(checkId, total);
@@ -49,13 +53,12 @@ public class RedisCheckTaskExecuteServiceImpl extends BaseCheckTaskExecuteServic
             finishedTask = getCheckTaskService().findFinishCheckTask(checkId);
             updateFinishedTask(checkId, finishedTask);
         } else {
-            finishedTask = hashOperations.increment("checkId:" + checkId, COUNT_KEY, 1L);
+            finishedTask = hashOperations.increment("Content_Check:Id:" + checkId, COUNT_KEY, 1L);
         }
         return finishedTask != null && finishedTask >= total;
-
     }
 
     private void updateFinishedTask(Long checkId, Long count) {
-        hashOperations.put("checkId:" + checkId, COUNT_KEY, count);
+        hashOperations.put("Content_Check:Id:" + checkId, COUNT_KEY, count);
     }
 }
