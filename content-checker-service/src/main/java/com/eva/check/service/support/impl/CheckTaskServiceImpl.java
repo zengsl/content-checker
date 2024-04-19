@@ -13,6 +13,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -35,6 +36,7 @@ public class CheckTaskServiceImpl extends ServiceImpl<CheckTaskMapper, CheckTask
     @Override
     public void finishTask(CheckTask checkTask) {
         checkTask.setStatus(CheckTaskStatus.DONE.getValue());
+        checkTask.setUpdateTime(LocalDateTime.now());
         this.updateById(checkTask);
     }
 
@@ -42,6 +44,7 @@ public class CheckTaskServiceImpl extends ServiceImpl<CheckTaskMapper, CheckTask
     @Override
     public void cancelTask(CheckTask checkTask) {
         checkTask.setStatus(CheckTaskStatus.CANCEL.getValue());
+        checkTask.setUpdateTime(LocalDateTime.now());
         this.updateById(checkTask);
     }
 
