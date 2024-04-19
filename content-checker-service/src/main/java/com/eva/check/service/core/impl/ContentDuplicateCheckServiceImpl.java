@@ -85,7 +85,6 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
         }
 
         List<CheckParagraphPair> checkParagraphListPair = Lists.newArrayListWithCapacity(16);
-        /*Set<Long> similarPaperSet = Sets.newHashSet();*/
         checkParagraphList.forEach(checkParagraph -> {
             PaperParagraph paperParagraph = PaperParagraph.builder().paperNo(checkParagraph.getPaperNo())
                     .content(checkParagraph.getContent())
@@ -114,8 +113,6 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
                         .similarity(ContentCheckConstant.SIMILARITY_INIT)
                         .build();
                 checkParagraphListPair.add(list);
-                // 收集所有相似论文ID
-                /* similarPaperSet.add(e.getPaperId());*/
             });
         });
 
@@ -131,20 +128,6 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
                 }
             });
         } else {
-            // 暂时不提前生成check_paper_pair，待最终结果计算出来之后再新增。否则，到时还需通过update去设置similarity
-            // 生成比对论文对 check_paper_pair
-            /*List<CheckPaperPair> checkPaperListPair = Lists.newArrayListWithCapacity(16);
-            similarPaperSet.forEach(id -> {
-                CheckPaperPair checkPaperPair = CheckPaperPair.builder()
-                        .taskId(checkTask.getTaskId())
-                        .checkPaperId(checkTask.getPaperId())
-                        .targetPaperId(id)
-                        .similarity(ContentCheckConstant.SIMILARITY_INIT)
-                        .build();
-                checkPaperListPair.add(checkPaperPair);
-            });
-            this.checkPaperPairService.initCompareList(checkPaperListPair);*/
-
             // 生成比对段落对 check_paragraph_pair
             this.checkParagraphPairService.initCompareList(checkParagraphListPair);
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
@@ -299,13 +282,6 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
 
 
     }
-
-            /*ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                .setNameFormat("collectResult-%d")
-                .build();
-        ExecutorService executorService = new ThreadPoolExecutor(2, 2,
-                0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>(), threadFactory);*/
 
     @Override
     public void collectResult(CheckTask checkTask) {
