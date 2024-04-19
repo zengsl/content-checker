@@ -18,6 +18,7 @@ import com.eva.check.service.flow.enums.ContentCheckState;
 import com.eva.check.service.support.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.AtomicDouble;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -149,28 +150,28 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
         // TODO 这里的校验可以用多线程进行
         List<CheckParagraphPair> checkParagraphPairList = this.checkParagraphPairService.getByTaskId(checkTask.getTaskId());
         // 遍历每一对需要比较的段落
-        for (CheckParagraphPair checkParagraphPair : checkParagraphPairList) {
+        checkParagraphPairList.stream().parallel().forEach(checkParagraphPair -> {
             // 获取待检测的段落包含的句子
             List<CheckSentence> checkSentenceList = this.checkSentenceService.getByParagraphId(checkParagraphPair.getCheckParaId());
             if (CollUtil.isEmpty(checkSentenceList)) {
                 // 回写CheckParagraphPair
                 checkParagraphPair.setSimilarity(0D);
                 checkParagraphPair.setStatus(CheckParagraphPairStatus.DONE.getValue());
-                continue;
+                return;
             }
             List<CheckSentencePair> checkSentencePairList = Lists.newArrayListWithCapacity(16);
             List<PaperSentence> paperSentenceList = this.paperSentenceService.getByParagraphIdFromCache(checkParagraphPair.getTargetParaId());
             // 相似度累加器
-            double similarityCounter = 0D;
+            AtomicDouble similarityCounter = new AtomicDouble();
             // 待检测句子按照每一句进行处理
-            for (CheckSentence checkSentence : checkSentenceList) {
+            checkSentenceList.stream().parallel().forEach(checkSentence -> {
                 // 计算词频  获取待检测句子的所有关键词词频
                 Map<String, Float> checkSentenceWordFrequency = SimilarUtil.countWordFrequency(checkSentence.getContent());
                 if (CollUtil.isEmpty(checkSentenceWordFrequency)) {
                     log.info("当前【检测句】没有找到对应的分词,不进行比对,checkSentenceId: {}", checkSentence.getSentenceId());
-                    continue;
+                    return;
                 }
-                for (PaperSentence targetPaperSentence : paperSentenceList) {
+                paperSentenceList.stream().parallel().forEach(targetPaperSentence -> {
                     // 获取并计算当前需要比对的句子词频
                     Map<String, Float> paperSentenceWordFrequency = this.paperTokenService.getWordFrequencyFromCache(targetPaperSentence.getSentenceId());
                     // 计算相似度
@@ -179,7 +180,8 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
                     boolean needCalculate = cosineSimilarity >= checkProperties.getSentenceSimilarityThreshold();
                     if (needCalculate) {
                         // 相似度累加
-                        similarityCounter += cosineSimilarity;
+//                        similarityCounter += cosineSimilarity;
+                        similarityCounter.addAndGet(cosineSimilarity);
                     }
                     // 计算每句的相似度以及相似的词。
                     CheckSentencePair checkSentencePair = CheckSentencePair.builder()
@@ -192,14 +194,14 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
                             .status(CheckSentencePairStatus.DONE.getValue())
                             .build();
                     checkSentencePairList.add(checkSentencePair);
-                }
-            }
+                });
+            });
             // 设置每对段落的相似度，这里没有统计那些句子对没有相似度的情况
             if (checkSentencePairList.isEmpty()) {
                 checkParagraphPair.setSimilarity(SimilarUtil.formatSimilarity(ContentCheckConstant.SIMILARITY_ZERO));
             } else {
                 // 段落比对 相似度计算：相似度累加 / 检测句子数量 TODO
-                checkParagraphPair.setSimilarity(SimilarUtil.formatSimilarity(similarityCounter / checkSentenceList.size()));
+                checkParagraphPair.setSimilarity(SimilarUtil.formatSimilarity(similarityCounter.get() / checkSentenceList.size()));
             }
             checkParagraphPair.setStatus(CheckParagraphPairStatus.DONE.getValue());
             // 按照每一对CheckParagraphPair批量保存CheckSentencePair
@@ -208,7 +210,10 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
             CheckPaperResult checkPaperResult = checkPaperResultMap.computeIfAbsent(checkParagraphPair.getTargetPaperId(), k -> new CheckPaperResult(checkTask.getPaperId(), checkParagraphPair.getTargetPaperId(), 0, 0D));
             checkPaperResult.setParagraphCount(checkPaperResult.getParagraphCount() + 1);
             checkPaperResult.setSimilarCount(checkPaperResult.getSimilarCount() + checkParagraphPair.getSimilarity());
-        }
+
+        });
+
+
         // 汇总paper_pair的结果
         saveCheckPaperResult(checkTask.getPaperId(), checkTask.getTaskId(), checkPaperResultMap);
         // 汇总段落检测对的结果
