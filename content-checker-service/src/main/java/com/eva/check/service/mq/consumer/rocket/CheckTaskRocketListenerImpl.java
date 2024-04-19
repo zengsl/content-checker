@@ -5,11 +5,13 @@ import com.eva.check.pojo.CheckTask;
 import com.eva.check.service.core.CheckTaskExecuteService;
 import com.eva.check.service.mq.common.constant.MqQueue;
 import com.eva.check.service.mq.common.event.CheckTaskStartEvent;
+import com.eva.check.service.support.CheckTaskService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 /**
@@ -32,10 +34,21 @@ public class CheckTaskRocketListenerImpl {
     public static class ConsumerStartTask implements RocketMQListener<CheckTaskStartEvent> {
         private final CheckTaskExecuteService checkTaskExecuteService;
 
+        private final CheckTaskService checkTaskService;
+
         @Override
         public void onMessage(CheckTaskStartEvent checkTaskStartEvent) {
             log.info("ConsumerStartTask 消费消息:{}", checkTaskStartEvent);
-            this.checkTaskExecuteService.startAllTask(checkTaskStartEvent.getCheckId(), checkTaskStartEvent.getCheckTasks());
+            try {
+                checkTaskStartEvent.getCheckTasks().forEach(checkTask -> {
+                    String content = checkTaskService.getCheckTaskContentFromCache(checkTask.getTaskId());
+                    checkTask.setContent(content);
+                });
+                // TODO 保障幂等
+                this.checkTaskExecuteService.startAllTask(checkTaskStartEvent.getCheckId(), checkTaskStartEvent.getCheckTasks());
+            } catch (DuplicateKeyException e) {
+                log.warn("疑似因为消息重复消费，导致发生重复Key异常。对该异常进行捕获，防止向外抛出从而引起MQ重试", e);
+            }
         }
     }
 
@@ -53,7 +66,12 @@ public class CheckTaskRocketListenerImpl {
         @Override
         public void onMessage(CheckTask checkTask) {
             log.info("ConsumerFinishTask 消费消息:{}", checkTask);
-            this.checkTaskExecuteService.finishTask(checkTask);
+            try {
+                // TODO 保障幂等
+                this.checkTaskExecuteService.finishTask(checkTask);
+            } catch (DuplicateKeyException e) {
+                log.warn("疑似因为消息重复消费，导致发生重复Key异常。对该异常进行捕获，防止向外抛出从而引起MQ重试", e);
+            }
         }
     }
 
@@ -71,7 +89,12 @@ public class CheckTaskRocketListenerImpl {
         @Override
         public void onMessage(CheckTask checkTask) {
             log.info("ConsumerCancelTask 消费消息:{}", checkTask);
-            this.checkTaskExecuteService.cancelTask(checkTask);
+            try {
+                // TODO 保障幂等
+                this.checkTaskExecuteService.cancelTask(checkTask);
+            } catch (DuplicateKeyException e) {
+                log.warn("疑似因为消息重复消费，导致发生重复Key异常。对该异常进行捕获，防止向外抛出从而引起MQ重试", e);
+            }
         }
     }
 }

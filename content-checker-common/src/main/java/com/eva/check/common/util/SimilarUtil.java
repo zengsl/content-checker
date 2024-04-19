@@ -1,5 +1,6 @@
 package com.eva.check.common.util;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.google.common.util.concurrent.AtomicDouble;
 import lombok.experimental.UtilityClass;
 
@@ -39,6 +40,20 @@ public class SimilarUtil {
         // 求得海明距离百分比
         Double scale = (1 - hammingDistance * 1D / DEFAULT_BIT_NUM) * 100D;
         return Double.parseDouble(String.format("%.2f", scale));
+    }
+
+    /**
+     * 统计词频
+     *
+     * @param sentence 句子
+     * @return 词频统计信息
+     */
+    public static Map<String, Float> countWordFrequency(String sentence) {
+        List<String> tokenList = TextUtil.cleanAndSegment(sentence);
+        if (CollectionUtil.isEmpty(tokenList)) {
+            return null;
+        }
+        return countWordFrequency(tokenList);
     }
 
     /**

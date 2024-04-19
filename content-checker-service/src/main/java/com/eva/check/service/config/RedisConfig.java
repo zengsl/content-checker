@@ -82,19 +82,25 @@ public class RedisConfig implements CachingConfigurer {
         RedisCacheConfiguration defaultCacheConfig = createDefaultRedisCacheConfiguration(classLoader);
         log.info("设置redis缓存的默认失效时间，失效时间默认为：{}天", defaultCacheConfig.getTtl().toDays());
         // 针对不同cacheName，设置不同的失效时间，map的key是缓存名称（注解设定的value/cacheNames），value是缓存的失效配置
-        Map<String, RedisCacheConfiguration> initialCacheConfiguration = getInitialCacheConfigurationMap(classLoader);
+        Map<String, RedisCacheConfiguration> initialCacheConfiguration = buildInitialCacheConfigurationMap(classLoader);
         return (builder) -> builder
                 .cacheDefaults(defaultCacheConfig)
                 .withInitialCacheConfigurations(initialCacheConfiguration);
 
     }
 
-    private Map<String, RedisCacheConfiguration> getInitialCacheConfigurationMap(ClassLoader classLoader) {
+    private Map<String, RedisCacheConfiguration> buildInitialCacheConfigurationMap(ClassLoader classLoader) {
         Map<String, RedisCacheConfiguration> initialCacheConfiguration = new HashMap<>(8);
         // 设定失效时间
-        initialCacheConfiguration.put(CacheConstant.PARAGRAPH_SENTENCE_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(7)));
-        initialCacheConfiguration.put(CacheConstant.SENTENCE_TOKEN_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(7)));
-        initialCacheConfiguration.put(CacheConstant.PARAGRAPH_TOKEN_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(7)));
+        // 比对库内的数据缓存可以设置的时间长一些
+        initialCacheConfiguration.put(CacheConstant.PARAGRAPH_SENTENCE_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(30)));
+        initialCacheConfiguration.put(CacheConstant.SENTENCE_TOKEN_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(30)));
+        initialCacheConfiguration.put(CacheConstant.SENTENCE_PAPER_TOKEN_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(30)));
+        initialCacheConfiguration.put(CacheConstant.SENTENCE_TOKEN_WORD_FREQ_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(30)));
+        initialCacheConfiguration.put(CacheConstant.PARAGRAPH_TOKEN_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(30)));
+        // 检测数据的缓存不需要保留很久
+        initialCacheConfiguration.put(CacheConstant.CHECK_TASK_CONTENT_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(2)));
+        initialCacheConfiguration.put(CacheConstant.CHECK_TASK_PARA_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(2)));
         return initialCacheConfiguration;
     }
 

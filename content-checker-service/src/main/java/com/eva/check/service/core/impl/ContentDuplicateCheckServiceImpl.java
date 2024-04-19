@@ -8,7 +8,6 @@ import com.eva.check.common.enums.CheckSentencePairStatus;
 import com.eva.check.common.enums.CheckSentenceStatus;
 import com.eva.check.common.enums.DataType;
 import com.eva.check.common.util.SimilarUtil;
-import com.eva.check.common.util.TextUtil;
 import com.eva.check.pojo.*;
 import com.eva.check.pojo.dto.SimilarPaperParagraph;
 import com.eva.check.service.config.CheckProperties;
@@ -28,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -47,7 +47,7 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
 
     private final PaperCoreService paperCoreService;
     private final PaperSentenceService paperSentenceService;
-    private final PaperTokenService tokenService;
+    private final PaperTokenService paperTokenService;
     private final CheckSentenceService checkSentenceService;
     private final CheckSentencePairService checkSentencePairService;
     private final CheckParagraphService checkParagraphService;
@@ -57,8 +57,6 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
     private final CheckProperties checkProperties;
 
     private IContentCheckTaskBaseFlow contentCheckTaskFlow;
-    private final Map<Long, List<String>> sentenceTokenMap = Maps.newConcurrentMap();
-    private final Map<Long, Map<String, Float>> sentenceWordFrequencyPool = Maps.newConcurrentMap();
 
     @Autowired
     @Lazy
@@ -76,7 +74,6 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
             return;
         }
 
-        // TODO 可以缓存 待观察
         List<CheckParagraph> checkParagraphList = this.checkParagraphService.getByTaskId(checkTask.getTaskId());
         if (CollectionUtil.isEmpty(checkParagraphList)) {
             log.warn("无论文段落，不执行预检查");
@@ -87,6 +84,8 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
         List<CheckParagraphPair> checkParagraphListPair = Lists.newArrayListWithCapacity(16);
         checkParagraphList.forEach(checkParagraph -> {
             PaperParagraph paperParagraph = PaperParagraph.builder().paperNo(checkParagraph.getPaperNo())
+                    .paperId(checkParagraph.getPaperId())
+                    .paragraphId(checkParagraph.getParagraphId())
                     .content(checkParagraph.getContent())
                     .hash(checkParagraph.getHash())
                     .hash1(checkParagraph.getHash1())
@@ -99,6 +98,7 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
             // 目前SimHash这种方法无法快速查找的可能相似的文档
             // List<SimilarPaperParagraph> similarPaperList = this.paperSimHashIndexService.findSimilarPaper(paperParagraph);
             if (CollUtil.isEmpty(similarPaperList)) {
+                log.info("未找到相似论文, paperId:{} paraId:{}", paperParagraph.getPaperId(), paperParagraph.getParagraphId());
                 return;
             }
 
@@ -137,23 +137,6 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
                 }
             });
 
-
-        }
-    }
-
-    @Data
-    static
-    class CheckPaperResult {
-        private Long checkPaperId;
-        private Long targetPaperId;
-        private Integer paragraphCount;
-        private Double similarCount;
-
-        public CheckPaperResult(Long checkPaperId, Long targetPaperId, Integer paragraphCount, Double similarCount) {
-            this.checkPaperId = checkPaperId;
-            this.targetPaperId = targetPaperId;
-            this.paragraphCount = paragraphCount;
-            this.similarCount = similarCount;
         }
     }
 
@@ -175,39 +158,21 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
                 checkParagraphPair.setStatus(CheckParagraphPairStatus.DONE.getValue());
                 continue;
             }
-
             List<CheckSentencePair> checkSentencePairList = Lists.newArrayListWithCapacity(16);
             List<PaperSentence> paperSentenceList = this.paperSentenceService.getByParagraphIdFromCache(checkParagraphPair.getTargetParaId());
             // 相似度累加器
             double similarityCounter = 0D;
             // 待检测句子按照每一句进行处理
             for (CheckSentence checkSentence : checkSentenceList) {
-                // 获取待检测句子的所有关键词词频 TODO 要提取到别的类中实现
-                Map<String, Float> checkSentenceWordFrequency = sentenceWordFrequencyPool.computeIfAbsent(checkSentence.getSentenceId(), s -> Maps.newHashMap());
+                // 计算词频  获取待检测句子的所有关键词词频
+                Map<String, Float> checkSentenceWordFrequency = SimilarUtil.countWordFrequency(checkSentence.getContent());
                 if (CollUtil.isEmpty(checkSentenceWordFrequency)) {
-                    List<String> checkSentenceTokenList = sentenceTokenMap.computeIfAbsent(checkSentence.getSentenceId(), s -> Lists.newArrayList());
-                    if (CollUtil.isEmpty(checkSentenceTokenList)) {
-                        // 为空就进行分词并且加入缓存
-                        checkSentenceTokenList.addAll(TextUtil.cleanAndSegment(checkSentence.getContent()));
-                    }
-                    // 计算词频
-                    Map<String, Float> charSequenceIntegerMap = SimilarUtil.countWordFrequency(checkSentenceTokenList);
-                    if (CollUtil.isEmpty(charSequenceIntegerMap)) {
-                        continue;
-                    }
-                    checkSentenceWordFrequency.putAll(charSequenceIntegerMap);
+                    log.info("当前【检测句】没有找到对应的分词,不进行比对,checkSentenceId: {}", checkSentence.getSentenceId());
+                    continue;
                 }
-
                 for (PaperSentence targetPaperSentence : paperSentenceList) {
-                    // 获取当前需要比对的句子包含的词
-                    // TODO 这里应该是计算词频
-                    List<PaperToken> paperSentenceTokenList = this.tokenService.getTokenBySentenceIdFromCache(targetPaperSentence.getSentenceId());
-                    if (CollUtil.isEmpty(paperSentenceTokenList)) {
-                        continue;
-                    }
-                    List<String> paperSentenceWordList = paperSentenceTokenList.stream().map(PaperToken::getContent).toList();
-                    // 计算词频
-                    Map<String, Float> paperSentenceWordFrequency = SimilarUtil.countWordFrequency(paperSentenceWordList);
+                    // 获取并计算当前需要比对的句子词频
+                    Map<String, Float> paperSentenceWordFrequency = this.paperTokenService.getWordFrequencyFromCache(targetPaperSentence.getSentenceId());
                     // 计算相似度
                     double cosineSimilarity = SimilarUtil.getCosineSimilarity(checkSentenceWordFrequency, paperSentenceWordFrequency);
                     // 计算出的相似度是否大于等于阈值；相似度小于阈值，不进行相似度计算，但是需要保留比对的结果
@@ -216,7 +181,6 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
                         // 相似度累加
                         similarityCounter += cosineSimilarity;
                     }
-
                     // 计算每句的相似度以及相似的词。
                     CheckSentencePair checkSentencePair = CheckSentencePair.builder()
                             .taskId(checkTask.getTaskId())
@@ -240,38 +204,15 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
             checkParagraphPair.setStatus(CheckParagraphPairStatus.DONE.getValue());
             // 按照每一对CheckParagraphPair批量保存CheckSentencePair
             this.checkSentencePairService.saveBatch(checkSentencePairList);
-
             // 统计以paper_pair为单位的相似度数据
             CheckPaperResult checkPaperResult = checkPaperResultMap.computeIfAbsent(checkParagraphPair.getTargetPaperId(), k -> new CheckPaperResult(checkTask.getPaperId(), checkParagraphPair.getTargetPaperId(), 0, 0D));
             checkPaperResult.setParagraphCount(checkPaperResult.getParagraphCount() + 1);
             checkPaperResult.setSimilarCount(checkPaperResult.getSimilarCount() + checkParagraphPair.getSimilarity());
         }
-
         // 汇总paper_pair的结果
-        if (!checkPaperResultMap.isEmpty()) {
-            AtomicReference<Double> paperSimilarityCounter = new AtomicReference<>(0D);
-            List<CheckPaperPair> checkPaperListPair = Lists.newArrayListWithCapacity(16);
-            checkPaperResultMap.forEach(((aLong, checkPaperResult) -> {
-                double paperSimilarity = checkPaperResult.getSimilarCount() / checkPaperResult.getParagraphCount();
-                CheckPaperPair checkPaperPair = CheckPaperPair.builder().targetPaperId(checkPaperResult.getTargetPaperId())
-                        .checkPaperId(checkPaperResult.getCheckPaperId()).taskId(checkTask.getTaskId())
-                        // 计算相似度
-                        .similarity(SimilarUtil.formatSimilarity(paperSimilarity))
-                        .build();
-                checkPaperListPair.add(checkPaperPair);
-                paperSimilarityCounter.updateAndGet(v -> v + paperSimilarity);
-            }));
-            this.checkPaperPairService.initCompareList(checkPaperListPair);
-
-            // 更新check_paper
-            this.checkPaperService.updateSimilarity(checkTask.getPaperId()
-                    , SimilarUtil.formatSimilarity(paperSimilarityCounter.get() / checkPaperResultMap.size()));
-        }
-
-
+        saveCheckPaperResult(checkTask.getPaperId(), checkTask.getTaskId(), checkPaperResultMap);
         // 汇总段落检测对的结果
         this.checkParagraphPairService.updateBatchById(checkParagraphPairList);
-
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
@@ -279,8 +220,29 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
             }
         });
 
+    }
 
+    private void saveCheckPaperResult(Long paperId, Long taskId, Map<Long, CheckPaperResult> checkPaperResultMap) {
+        if (CollectionUtils.isEmpty(checkPaperResultMap)) {
+            return;
+        }
+        AtomicReference<Double> paperSimilarityCounter = new AtomicReference<>(0D);
+        List<CheckPaperPair> checkPaperListPair = Lists.newArrayListWithCapacity(16);
+        checkPaperResultMap.forEach(((aLong, checkPaperResult) -> {
+            double paperSimilarity = checkPaperResult.getSimilarCount() / checkPaperResult.getParagraphCount();
+            CheckPaperPair checkPaperPair = CheckPaperPair.builder().targetPaperId(checkPaperResult.getTargetPaperId())
+                    .checkPaperId(checkPaperResult.getCheckPaperId()).taskId(taskId)
+                    // 计算相似度
+                    .similarity(SimilarUtil.formatSimilarity(paperSimilarity))
+                    .build();
+            checkPaperListPair.add(checkPaperPair);
+            paperSimilarityCounter.updateAndGet(v -> v + paperSimilarity);
+        }));
+        this.checkPaperPairService.initCompareList(checkPaperListPair);
 
+        // 更新check_paper
+        this.checkPaperService.updateSimilarity(paperId
+                , SimilarUtil.formatSimilarity(paperSimilarityCounter.get() / checkPaperResultMap.size()));
     }
 
     @Override
@@ -330,8 +292,6 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
             // 统计所有段落的综合相似度
             paragraphSimilarityCounter += checkParagraph.getSimilarity();
             // 计算每段文本与单一疑似段落的相似度结果 生成check_paper_pair
-
-
         }
 
         // 批量更新【检测句子】的结果
@@ -367,4 +327,21 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
         checkSentence.setSimilarity(similarity);
         checkSentence.setStatus(CheckSentenceStatus.DONE.getValue());
     }
+
+    @Data
+    static
+    class CheckPaperResult {
+        private Long checkPaperId;
+        private Long targetPaperId;
+        private Integer paragraphCount;
+        private Double similarCount;
+
+        public CheckPaperResult(Long checkPaperId, Long targetPaperId, Integer paragraphCount, Double similarCount) {
+            this.checkPaperId = checkPaperId;
+            this.targetPaperId = targetPaperId;
+            this.paragraphCount = paragraphCount;
+            this.similarCount = similarCount;
+        }
+    }
+
 }

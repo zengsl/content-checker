@@ -56,7 +56,6 @@ public class ContentDuplicateCheckPrepareServiceImpl implements DuplicateCheckPr
             log.error("检测任务内容checkTask为空");
             return;
         }
-//        CheckTask checkTask = this.checkTaskService.getById(mqCheckTask.getTaskId());
         if (StrUtil.isBlank(checkTask.getContent())) {
             log.error("检测任务内容为空，任务：{}", checkTask);
             this.contentCheckTaskFlow.processCancel(checkTask);

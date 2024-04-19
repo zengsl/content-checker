@@ -13,5 +13,6 @@ import java.util.List;
 public interface CheckParagraphService extends IService<CheckParagraph> {
 
     List<CheckParagraph> getByTaskId(Long taskId);
+    List<CheckParagraph> getByTaskIdFromCache(Long taskId);
 
 }

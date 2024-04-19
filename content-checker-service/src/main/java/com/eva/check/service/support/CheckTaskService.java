@@ -24,6 +24,8 @@ public interface CheckTaskService extends IService<CheckTask> {
 
     List<CheckTask> findByCheckId(Long checkId);
 
+    String getCheckTaskContentFromCache(Long checkId);
+
     @Transactional(rollbackFor = Exception.class)
     default CheckTask findContentCheckTask(String checkNo) {
         return this.findCheckTask(checkNo, DataType.FULL_TEXT.getValue());

@@ -46,9 +46,8 @@ public class PaperCoreServiceImpl implements PaperCoreService {
     @Override
     public List<SimilarPaperParagraph> findSimilarPaperParagraph(PaperParagraph paperParagraph) {
 
-        // TODO pageAfter分页,当前的pageSize只是做一个安全防御。按照目前的一般的业务场景来说，不会超过该阈值。
+        //  pageAfter分页,当前的pageSize只是做一个安全防御。按照目前的一般的业务场景来说，不会超过该阈值。
         int pageSize = 5000;
-
         Query paperNoQuery = MatchQuery.of(m -> m
                 .field("paperNo")
                 .query(StringUtils.hasText(paperParagraph.getPaperNo()) ? paperParagraph.getPaperNo() : "-11")
@@ -94,7 +93,7 @@ public class PaperCoreServiceImpl implements PaperCoreService {
         assert total != null;
         long totalDataCount = total.value();
         long tempPageNo = totalDataCount % pageSize == 0L ? totalDataCount / pageSize : (totalDataCount / pageSize) + 1L;
-        log.info("总数量={},总页数={}", totalDataCount, tempPageNo);
+        log.info("paperParagraphId:{} 总数量={},总页数={}", paperParagraph.getParagraphId(), totalDataCount, tempPageNo);
         List<Hit<PaperParagraphDoc>> hits = response.hits().hits();
         /*for (Hit<PaperParagraphDoc> hit : hits) {
             PaperParagraphDoc source = hit.source();

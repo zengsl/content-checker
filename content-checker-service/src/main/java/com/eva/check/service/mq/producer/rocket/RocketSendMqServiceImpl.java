@@ -28,38 +28,45 @@ public class RocketSendMqServiceImpl implements SendMqService {
 
     @Override
     public void startTask(CheckTaskStartEvent checkTaskStartEvent) {
+        // 清空内容，MQ不存储文本内容
+        checkTaskStartEvent.getCheckTasks().forEach(RocketSendMqServiceImpl::cleanContent);
         sendMessage(MqQueue.START_TASK_TAG, checkTaskStartEvent);
     }
 
     @Override
     public void finishTask(CheckTask checkTask) {
+        cleanContent(checkTask);
         sendMessage(MqQueue.FINISH_TASK_TAG, checkTask);
     }
 
     @Override
     public void cancelTask(CheckTask checkTask) {
+        cleanContent(checkTask);
         sendMessage(MqQueue.CANCEL_TASK_TAG, checkTask);
 
     }
 
     @Override
     public void doContentPreCheck(CheckTask checkTask) {
+        cleanContent(checkTask);
         sendMessage(MqQueue.CONTENT_PRE_CHECK_TAG, checkTask);
-
     }
 
     @Override
     public void doParagraphCheck(CheckTask checkTask) {
+        cleanContent(checkTask);
         sendMessage(MqQueue.PARAGRAPH_CHECK_TAG, checkTask);
     }
 
     @Override
     public void doCollectResult(CheckTask checkTask) {
+        cleanContent(checkTask);
         sendMessage(MqQueue.COLLECT_RESULT_TAG, checkTask);
     }
 
     @Override
     public void doGenerateReport(CheckTask checkTask) {
+        cleanContent(checkTask);
         sendMessage(MqQueue.GENERATE_REPORT_TAG, checkTask);
     }
 
@@ -84,5 +91,9 @@ public class RocketSendMqServiceImpl implements SendMqService {
 
     <T> String buildJson(T checkTask) {
         return JacksonUtil.obj2String(checkTask);
+    }
+
+    private static void cleanContent(CheckTask checkTask) {
+        checkTask.setContent(null);
     }
 }

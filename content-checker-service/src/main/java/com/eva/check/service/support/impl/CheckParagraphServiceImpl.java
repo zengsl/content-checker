@@ -2,9 +2,11 @@ package com.eva.check.service.support.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.eva.check.common.constant.CacheConstant;
 import com.eva.check.mapper.CheckParagraphMapper;
 import com.eva.check.pojo.CheckParagraph;
 import com.eva.check.service.support.CheckParagraphService;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,12 +23,18 @@ public class CheckParagraphServiceImpl extends ServiceImpl<CheckParagraphMapper,
         implements CheckParagraphService {
 
     @Transactional(readOnly = true)
-
     @Override
     public List<CheckParagraph> getByTaskId(Long taskId) {
         LambdaQueryWrapper<CheckParagraph> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(CheckParagraph::getTaskId, taskId);
         return this.getBaseMapper().selectList(queryWrapper);
+    }
+
+    @Transactional(readOnly = true)
+    @Cacheable(value = CacheConstant.CHECK_TASK_PARA_CACHE_KEY, key = "#taskId")
+    @Override
+    public List<CheckParagraph> getByTaskIdFromCache(Long taskId) {
+        return this.getByTaskId(taskId);
     }
 }
 
