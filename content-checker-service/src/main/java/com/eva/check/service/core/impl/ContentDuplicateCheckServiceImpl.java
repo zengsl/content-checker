@@ -266,15 +266,15 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
                 log.debug("checkParagraphList is empty, ParagraphId: {}", checkParagraph.getParagraphId());
                 continue;
             }
-            double sentenceSimilarityCounter = 0D;
+            AtomicDouble sentenceSimilarityCounter = new AtomicDouble();
             // 遍历检测句子
-            for (CheckSentence checkSentence : checkSentenceList) {
+            checkSentenceList.stream().parallel().forEach(checkSentence -> {
                 // 查找每个句子的检测对（当前句子与疑似句子）
                 List<CheckSentencePair> checkSentencePairList = this.checkSentencePairService.getAllByCheckSentenceId(checkSentence.getSentenceId());
                 if (CollUtil.isEmpty(checkSentencePairList)) {
                     finishCheckSentence(checkSentence, 0D);
                     log.debug("checkSentencePairList is empty, CheckSentenceId: {}", checkSentence.getSentenceId());
-                    continue;
+                    return;
                 }
                 // 所有疑似句子的算术平均数作为当前句子的相似度
 //                double sentenceSimilarity = SimilarUtil.formatSimilarity(checkSentencePairList.stream().mapToDouble(CheckSentencePair::getSimilarity).sum() / checkSentencePairList.size());
@@ -282,8 +282,9 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
                 double sentenceSimilarity = SimilarUtil.formatSimilarity(checkSentencePairList.stream().mapToDouble(CheckSentencePair::getSimilarity).max().orElse(0));
                 finishCheckSentence(checkSentence, sentenceSimilarity);
                 // 累加每个句子的相似度
-                sentenceSimilarityCounter += sentenceSimilarity;
-            }
+                sentenceSimilarityCounter.addAndGet(sentenceSimilarity);
+            });
+
             // 收集所有的句子，以便最终批量更新结果
             allCheckSentenceList.addAll(checkSentenceList);
             // 设置段落的相似度,并将结果设置为结束
@@ -291,7 +292,7 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
             if (checkSentenceList.isEmpty()) {
                 log.error("checkSentenceList is empty, ParagraphId: {}", checkParagraph.getParagraphId());
             } else {
-                similarity = sentenceSimilarityCounter / checkSentenceList.size();
+                similarity = sentenceSimilarityCounter.doubleValue() / checkSentenceList.size();
             }
             finishCheckParagraph(checkParagraph, SimilarUtil.formatSimilarity(similarity));
             // 统计所有段落的综合相似度
