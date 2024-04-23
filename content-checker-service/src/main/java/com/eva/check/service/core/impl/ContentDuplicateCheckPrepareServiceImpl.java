@@ -7,7 +7,6 @@ import com.eva.check.common.util.TextUtil;
 import com.eva.check.pojo.CheckParagraph;
 import com.eva.check.pojo.CheckSentence;
 import com.eva.check.pojo.CheckTask;
-import com.eva.check.pojo.dto.MqCheckTask;
 import com.eva.check.service.core.DuplicateCheckPrepareService;
 import com.eva.check.service.flow.IContentCheckTaskBaseFlow;
 import com.eva.check.service.flow.enums.ContentCheckState;

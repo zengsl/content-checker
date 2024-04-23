@@ -7,8 +7,6 @@ import com.eva.check.pojo.dto.CheckReportDTO;
 import com.eva.check.pojo.dto.PaperCheckReq;
 import com.eva.check.pojo.vo.CheckReportContentDTO;
 
-import java.util.Map;
-
 /**
  * 论文检测服务
  *

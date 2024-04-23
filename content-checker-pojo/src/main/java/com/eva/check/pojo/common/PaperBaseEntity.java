@@ -1,7 +1,6 @@
 package com.eva.check.pojo.common;
 
 import com.eva.check.common.constant.ContentCheckConstant;
-import com.eva.check.common.enums.DataSource;
 import com.eva.check.common.enums.DataType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

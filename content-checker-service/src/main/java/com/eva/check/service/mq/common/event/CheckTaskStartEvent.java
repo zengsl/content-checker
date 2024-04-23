@@ -1,7 +1,6 @@
 package com.eva.check.service.mq.common.event;
 
 import com.eva.check.pojo.CheckTask;
-import com.eva.check.pojo.dto.MqCheckTask;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

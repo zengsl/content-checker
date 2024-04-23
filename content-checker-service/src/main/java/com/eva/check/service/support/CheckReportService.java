@@ -6,8 +6,6 @@ import com.eva.check.pojo.CheckReport;
 import com.eva.check.pojo.CheckRequest;
 import com.eva.check.pojo.vo.CheckReportContentDTO;
 
-import java.util.Map;
-
 /**
  * @author zengsl
  * @description 针对表【check_report(检测报告)】的数据库操作Service

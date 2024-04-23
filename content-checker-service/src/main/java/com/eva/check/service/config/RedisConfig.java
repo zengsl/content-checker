@@ -2,8 +2,6 @@ package com.eva.check.service.config;
 
 import cn.hutool.core.util.ReflectUtil;
 import com.eva.check.common.constant.CacheConstant;
-import com.eva.check.service.flow.IProcessLogService;
-import com.eva.check.service.flow.impl.RedisProcessLogServiceImpl;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -92,6 +90,7 @@ public class RedisConfig implements CachingConfigurer {
 
     private Map<String, RedisCacheConfiguration> buildInitialCacheConfigurationMap(ClassLoader classLoader) {
         Map<String, RedisCacheConfiguration> initialCacheConfiguration = new HashMap<>(8);
+
         // 设定失效时间
         // 比对库内的数据缓存可以设置的时间长一些
         initialCacheConfiguration.put(CacheConstant.PARAGRAPH_SENTENCE_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(30)));

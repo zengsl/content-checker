@@ -1,6 +1,5 @@
 package com.eva.check.web.controller;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.io.IoUtil;
 import com.eva.check.common.enums.CheckReportStatus;
 import com.eva.check.common.enums.PaperErrorCode;

@@ -12,8 +12,6 @@ import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.apache.rocketmq.spring.support.RocketMQHeaders;
 import org.springframework.messaging.support.MessageBuilder;
 
-import java.util.StringJoiner;
-
 /**
  * RocketMQ 发送实现类
  *
