@@ -36,8 +36,11 @@ server:
 
 content-check:
   mq: rocketMq
+  process-log: true
 #  mq: rocketMq
 #  mq: eventBus
+
+
 
 #
 #  mvc:

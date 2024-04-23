@@ -2,6 +2,8 @@ package com.eva.check.service.config;
 
 import cn.hutool.core.util.ReflectUtil;
 import com.eva.check.common.constant.CacheConstant;
+import com.eva.check.service.flow.IProcessLogService;
+import com.eva.check.service.flow.impl.RedisProcessLogServiceImpl;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -57,8 +59,8 @@ import static com.eva.check.service.config.ContentCheckAutoConfiguration.*;
 public class RedisConfig implements CachingConfigurer {
 
     @Bean
-    public RedisTemplate<String, Integer> redisTemplate(RedisConnectionFactory connectionFactory, @Qualifier("keySerializer") RedisSerializer<String> keySerializer, @Qualifier("valueSerializer") RedisSerializer<?> valueSerializer) {
-        RedisTemplate<String, Integer> template = new RedisTemplate<>();
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory, @Qualifier("keySerializer") RedisSerializer<String> keySerializer, @Qualifier("valueSerializer") RedisSerializer<?> valueSerializer) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
         // 使用StringRedisSerializer来序列化和反序列化redis的key值
@@ -73,7 +75,6 @@ public class RedisConfig implements CachingConfigurer {
         template.afterPropertiesSet();
         return template;
     }
-
 
     @Bean
     public RedisCacheManagerBuilderCustomizer myRedisCacheManagerBuilderCustomizer(ResourceLoader resourceLoader) {
@@ -99,7 +100,8 @@ public class RedisConfig implements CachingConfigurer {
         initialCacheConfiguration.put(CacheConstant.SENTENCE_TOKEN_WORD_FREQ_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(30)));
         initialCacheConfiguration.put(CacheConstant.PARAGRAPH_TOKEN_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(30)));
 //        initialCacheConfiguration.put(CacheConstant.REPORT_CONTENT_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(5)));
-        initialCacheConfiguration.put(CacheConstant.REPORT_CONTENT_MAP_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(5)));
+        initialCacheConfiguration.put(CacheConstant.REPORT_CONTENT_DTO_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(5)));
+        initialCacheConfiguration.put(CacheConstant.CHECK_PROCESS_LOG_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(5)));
         // 检测数据的缓存不需要保留很久
         initialCacheConfiguration.put(CacheConstant.CHECK_TASK_CONTENT_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(2)));
         initialCacheConfiguration.put(CacheConstant.CHECK_TASK_PARA_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(2)));

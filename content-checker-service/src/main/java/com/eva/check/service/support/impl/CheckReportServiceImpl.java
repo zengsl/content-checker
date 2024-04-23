@@ -24,16 +24,13 @@ import com.eva.check.service.support.CheckReportService;
 import com.eva.check.service.support.CheckRequestService;
 import com.eva.check.service.support.CheckTaskService;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 针对表【check_report(检测报告)】的数据库操作Service实现
@@ -61,7 +58,7 @@ public class CheckReportServiceImpl extends ServiceImpl<CheckReportMapper, Check
         return CollUtil.isEmpty(checkReports) ? null : checkReports.get(0);
     }
 
-    @Cacheable(value = CacheConstant.REPORT_CONTENT_MAP_CACHE_KEY, key = "#checkNo")
+    @Cacheable(value = CacheConstant.REPORT_CONTENT_DTO_CACHE_KEY, key = "#checkNo")
     @Transactional(readOnly = true)
     @Override
     public CheckReportContentDTO getCheckReportContent(String checkNo) {

@@ -1,9 +1,9 @@
 package com.eva.check.service.flow.impl;
 
+import com.eva.check.common.constant.CacheConstant;
 import com.eva.check.pojo.CheckTask;
-import com.eva.check.pojo.converter.CheckTaskConverter;
-import com.eva.check.pojo.dto.MqCheckTask;
 import com.eva.check.service.flow.ICheckTaskFlow;
+import com.eva.check.service.flow.IProcessLogService;
 import com.eva.check.service.mq.common.event.CheckTaskStartEvent;
 import com.eva.check.service.mq.producer.SendMqService;
 import org.springframework.stereotype.Service;
@@ -19,8 +19,8 @@ import java.util.List;
 @Service
 public class CheckTaskFlow extends BaseCheckTaskFlow implements ICheckTaskFlow {
 
-    public CheckTaskFlow(SendMqService sendMqService) {
-        super(sendMqService);
+    public CheckTaskFlow(SendMqService sendMqService, IProcessLogService processLogService) {
+        super(sendMqService, processLogService);
     }
 
     @Override
@@ -32,6 +32,7 @@ public class CheckTaskFlow extends BaseCheckTaskFlow implements ICheckTaskFlow {
                 .checkId(checkId)
                 .taskNum(checkTaskList.size())
                 .build();
+        this.getProcessLogService().log(CacheConstant.CHECK_PROCESS_LOG_CACHE_KEY, checkId, "检测请求：" + checkId + " 开启所有任务");
         // 开启任务
         this.getSendMqService().startTask(checkTaskStartEvent);
     }

@@ -21,8 +21,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CheckTaskStartEvent {
+
     /**
-     * 验证请求主键
+     * 验证请求Id
      */
     private Long checkId;
 

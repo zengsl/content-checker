@@ -19,4 +19,5 @@ public class CheckProperties {
     private String contentSimilarityThreshold = "40%";
     private Double sentenceSimilarityThreshold = 0.4D;
     private String reportPath = System.getProperty("user.dir") + File.separator + "report";
+    private Boolean processLog = true;
 }

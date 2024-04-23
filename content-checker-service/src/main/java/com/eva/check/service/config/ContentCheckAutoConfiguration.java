@@ -10,6 +10,8 @@ import co.elastic.clients.transport.rest_client.RestClientTransport;
 import com.eva.check.common.constant.MessageQueueConstants;
 import com.eva.check.service.core.*;
 import com.eva.check.service.core.impl.*;
+import com.eva.check.service.flow.IProcessLogService;
+import com.eva.check.service.flow.impl.RedisProcessLogServiceImpl;
 import com.eva.check.service.mq.consumer.eventbus.CheckTaskEventBusListenerImpl;
 import com.eva.check.service.mq.consumer.eventbus.ContentCheckEventBusListenerImpl;
 import com.eva.check.service.mq.consumer.rocket.CheckTaskRocketListenerImpl;
@@ -74,6 +76,7 @@ import java.util.function.Consumer;
 public class ContentCheckAutoConfiguration extends ElasticsearchConfiguration {
 
     private final ElasticsearchProperties elasticsearchProperties;
+    private final CheckProperties checkProperties;
 
     @Bean
     SimilarTextRender paragraphRender() {
@@ -91,6 +94,11 @@ public class ContentCheckAutoConfiguration extends ElasticsearchConfiguration {
     SimilarTextRule similarTextRule() {
         // 文本渲染
         return new DefaultSimilarTextRuleImpl();
+    }
+
+    @Bean
+    public IProcessLogService processLogService(RedisTemplate redisTemplate, CheckProperties checkProperties) {
+        return new RedisProcessLogServiceImpl(redisTemplate, checkProperties);
     }
 
     /*@Bean
@@ -129,7 +137,7 @@ public class ContentCheckAutoConfiguration extends ElasticsearchConfiguration {
     protected static class RocketStrategy {
 
         @Bean
-        CheckTaskExecuteService checkTaskExecuteService(CheckRequestService checkRequestService, CheckTaskService checkTaskService, DuplicateCheckPrepareService duplicateCheckPrepareService, RedisTemplate<String, Integer> redisTemplate, CheckReportService checkReportService) {
+        CheckTaskExecuteService checkTaskExecuteService(CheckRequestService checkRequestService, CheckTaskService checkTaskService, DuplicateCheckPrepareService duplicateCheckPrepareService, RedisTemplate redisTemplate, CheckReportService checkReportService) {
             return new RedisCheckTaskExecuteServiceImpl(checkRequestService, checkTaskService, duplicateCheckPrepareService, redisTemplate, checkReportService);
         }
 
