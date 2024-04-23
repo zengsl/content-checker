@@ -93,18 +93,18 @@ public class ContentCheckAutoConfiguration extends ElasticsearchConfiguration {
         return new DefaultSimilarTextRuleImpl();
     }
 
-    @Bean
-    CheckTaskExecuteService checkTaskDispatcher(com.eva.check.service.support.CheckTaskService checkTaskService, CheckRequestService checkRequestService, DuplicateCheckPrepareService duplicateCheckPrepareService) {
-        return new DefaultCheckTaskExecuteServiceImpl(checkRequestService, checkTaskService, duplicateCheckPrepareService);
-    }
+    /*@Bean
+    CheckTaskExecuteService checkTaskDispatcher(com.eva.check.service.support.CheckTaskService checkTaskService, CheckRequestService checkRequestService, DuplicateCheckPrepareService duplicateCheckPrepareService, CheckReportService checkReportService) {
+        return new DefaultCheckTaskExecuteServiceImpl(checkRequestService, checkTaskService, duplicateCheckPrepareService, checkReportService);
+    }*/
 
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(prefix = "content-check", name = "mq", havingValue = MessageQueueConstants.EVENT_BUS, matchIfMissing = true)
     protected static class GuavaStrategy {
         @Bean
-        CheckTaskExecuteService checkTaskExecuteService(CheckRequestService checkRequestService, CheckTaskService checkTaskService, DuplicateCheckPrepareService duplicateCheckPrepareService) {
-            return new DefaultCheckTaskExecuteServiceImpl(checkRequestService, checkTaskService, duplicateCheckPrepareService);
+        CheckTaskExecuteService checkTaskExecuteService(CheckRequestService checkRequestService, CheckTaskService checkTaskService, DuplicateCheckPrepareService duplicateCheckPrepareService, CheckReportService checkReportService) {
+            return new DefaultCheckTaskExecuteServiceImpl(checkRequestService, checkTaskService, duplicateCheckPrepareService, checkReportService);
         }
 
         @Bean
@@ -129,8 +129,8 @@ public class ContentCheckAutoConfiguration extends ElasticsearchConfiguration {
     protected static class RocketStrategy {
 
         @Bean
-        CheckTaskExecuteService checkTaskExecuteService(CheckRequestService checkRequestService, CheckTaskService checkTaskService, DuplicateCheckPrepareService duplicateCheckPrepareService, RedisTemplate<String, Integer> redisTemplate) {
-            return new RedisCheckTaskExecuteServiceImpl(checkRequestService, checkTaskService, duplicateCheckPrepareService, redisTemplate);
+        CheckTaskExecuteService checkTaskExecuteService(CheckRequestService checkRequestService, CheckTaskService checkTaskService, DuplicateCheckPrepareService duplicateCheckPrepareService, RedisTemplate<String, Integer> redisTemplate, CheckReportService checkReportService) {
+            return new RedisCheckTaskExecuteServiceImpl(checkRequestService, checkTaskService, duplicateCheckPrepareService, redisTemplate, checkReportService);
         }
 
         @Bean

@@ -1,10 +1,13 @@
 package com.eva.check.web.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.io.IoUtil;
 import com.eva.check.common.enums.CheckReportStatus;
 import com.eva.check.common.enums.PaperErrorCode;
 import com.eva.check.common.exception.SystemException;
+import com.eva.check.pojo.converter.ReportConverter;
 import com.eva.check.pojo.dto.CheckReportDTO;
+import com.eva.check.pojo.vo.CheckReportContentDTO;
 import com.eva.check.service.config.CheckProperties;
 import com.eva.check.service.core.PaperCheckService;
 import com.eva.check.web.common.R;
@@ -43,12 +46,13 @@ public class CheckReportController {
     @GetMapping("/{checkNo}")
     public ModelAndView view(@NotBlank @PathVariable String checkNo) {
 
-        Map<String, Object> params = this.paperCheckService.getPaperCheckReportParams(checkNo);
-        if (params == null || params.isEmpty()) {
+        CheckReportContentDTO checkReportContentDTO = this.paperCheckService.getPaperCheckReportParams(checkNo);
+        if (checkReportContentDTO == null) {
             return new ModelAndView("report/404");
         }
-        params.put("isDownload", false);
+        checkReportContentDTO.setIsDownload(false);
         ModelAndView modelAndView = new ModelAndView();
+        Map<String, Object> params = ReportConverter.INSTANCE.reportContentDto2Map(checkReportContentDTO);
         modelAndView.addAllObjects(params);
         modelAndView.setViewName("report/mainReport");
         return modelAndView;
@@ -65,7 +69,6 @@ public class CheckReportController {
     @GetMapping("/download/{checkNo}")
     public StreamingResponseBody download(@NotBlank @PathVariable String checkNo, HttpServletResponse httpResponse) {
 
-        // this.paperCheckService.generateReport(checkNo);
         CheckReportDTO paperCheckReport = this.paperCheckService.getOrCreateReportFile(checkNo);
         if (!CheckReportStatus.DONE.getValue().equals(paperCheckReport.getStatus())) {
             throw new SystemException(PaperErrorCode.PARAM_INVALID, "报告未生成");

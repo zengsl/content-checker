@@ -31,5 +31,8 @@ public interface PaperCheckConverter {
     @Mapping(target = "similarity", ignore = true)
     CheckRequest paperCheckReq2CheckReq(PaperCheckReq paperCheckReq);
 
+    @Mapping(target = "paperId", ignore = true)
+    @Mapping(target = "checkId", ignore = true)
+    @Mapping(target = "similarity", ignore = true)
     CheckPaper paperCheckReq2CheckPaper(PaperCheckReq paperCheckReq);
 }

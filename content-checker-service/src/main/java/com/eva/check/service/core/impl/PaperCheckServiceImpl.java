@@ -2,8 +2,6 @@ package com.eva.check.service.core.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.lang.id.NanoId;
-import cn.hutool.core.util.EscapeUtil;
-import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.ZipUtil;
 import com.eva.check.common.enums.*;
@@ -19,19 +17,16 @@ import com.eva.check.pojo.converter.ReportConverter;
 import com.eva.check.pojo.dto.CheckReportDTO;
 import com.eva.check.pojo.dto.PaperAddReq;
 import com.eva.check.pojo.dto.PaperCheckReq;
-import com.eva.check.pojo.dto.PaperResult;
-import com.eva.check.pojo.vo.SimilarPaperVO;
+import com.eva.check.pojo.vo.CheckReportContentDTO;
 import com.eva.check.service.config.CheckProperties;
 import com.eva.check.service.core.PaperCheckService;
 import com.eva.check.service.core.PaperCollectService;
-import com.eva.check.service.core.SimilarPaperService;
 import com.eva.check.service.flow.ICheckTaskFlow;
 import com.eva.check.service.support.CheckPaperService;
 import com.eva.check.service.support.CheckReportService;
 import com.eva.check.service.support.CheckRequestService;
 import com.eva.check.service.support.CheckTaskService;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -69,7 +64,6 @@ public class PaperCheckServiceImpl implements PaperCheckService {
     private final CheckTaskService checkTaskService;
     private final CheckReportService checkReportService;
     private final CheckPaperService checkPaperService;
-    private final SimilarPaperService similarPaperService;
     private final CheckProperties checkProperties;
     private final ISpringTemplateEngine templateEngine;
     private final ICheckTaskFlow checkTaskFlow;
@@ -144,6 +138,7 @@ public class PaperCheckServiceImpl implements PaperCheckService {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public String createPaperCheckAndCollect(PaperCheckReq paperCheckReq) throws SystemException {
         PaperAddReq paperAddReq = PaperCollectConverter.INSTANCE.check2AddReq(paperCheckReq);
@@ -180,24 +175,15 @@ public class PaperCheckServiceImpl implements PaperCheckService {
     }
 
     @Override
-    public Map<String, Object> getPaperCheckReportParams(String checkNo) throws SystemException {
+    public CheckReportContentDTO getPaperCheckReportParams(String checkNo) throws SystemException {
         CheckRequest checkRequest = this.checkRequestService.getByCheckNo(checkNo);
         if (checkRequest == null) {
             return null;
         }
-        CheckTask contentCheckTask = this.checkTaskService.findContentCheckTask(checkNo);
-        PaperResult paperResult = this.similarPaperService.assemblePaperResult(contentCheckTask.getTaskId());
-        List<SimilarPaperVO> allSimilarPaperList = this.checkPaperService.getAllSimilarPaper(contentCheckTask.getPaperId());
-        Map<String, Object> params = Maps.newHashMap();
-        params.put("finalSimilarity", NumberUtil.decimalFormat("#.##%", checkRequest.getSimilarity()));
-        params.put("checkRequest", checkRequest);
-        params.put("contentCheckTask", contentCheckTask);
-        params.put("reportParagraphs", ReportConverter.INSTANCE.paperResult2paragraphVO(paperResult));
-        params.put("similarSentenceResultMap", ReportConverter.INSTANCE.paperResult2SentenceMap(paperResult));
-        params.put("allSimilarPaperList", allSimilarPaperList);
-        params.put("isDownload", true);
-        return params;
+        return this.checkReportService.getCheckReportContent(checkRequest.getCheckNo());
     }
+
+
 
     @Override
     public CheckReportDTO getOrCreateReportFile(String checkNo) throws SystemException {
@@ -237,17 +223,17 @@ public class PaperCheckServiceImpl implements PaperCheckService {
     private void generateReport(String checkNo, CheckReport checkReport) {
         checkReport.setCheckNo(checkNo);
 
-        Map<String, Object> params = this.getPaperCheckReportParams(checkNo);
-        params.put("isDownload", true);
+        CheckReportContentDTO checkReportContentDTO = this.getPaperCheckReportParams(checkNo);
+        checkReportContentDTO.setIsDownload(true);
         Context context = new Context();
+
+        Map<String, Object> params = ReportConverter.INSTANCE.reportContentDto2Map(checkReportContentDTO);
         context.setVariables(params);
+
         String html = templateEngine.process("report/mainReport", context);
-        CheckRequest checkRequest = (CheckRequest) params.get("checkRequest");
         String datePath = FileUtil.generatePathByDate();
         String fullPath = checkProperties.getReportPath() + File.separator + datePath;
-        String reportName = EscapeUtil.escape(checkRequest.getTitle());
         String fileCode = NanoId.randomNanoId();
-        checkReport.setReportName(reportName);
         checkReport.setFileCode(fileCode);
 
         // 按照fileName创建文件夹,如：report/2023/12/11/xxxxxxx
@@ -255,7 +241,7 @@ public class PaperCheckServiceImpl implements PaperCheckService {
         // 压缩包名称,如：report/2023/12/11/xxxxxxx.zup
         String zipReportFile = reportFolder + ".zip";
         checkReport.setFilePath(datePath + File.separator + fileCode + ".zip");
-        checkReport.setCompress(CompressType.ZIP.getValue());
+        /*checkReport.setCompress(CompressType.ZIP.getValue());*/
 
         // 按照日期创建文件夹
         Path folderPath = Paths.get(fullPath);

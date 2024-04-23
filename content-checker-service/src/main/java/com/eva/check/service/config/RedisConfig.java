@@ -98,6 +98,8 @@ public class RedisConfig implements CachingConfigurer {
         initialCacheConfiguration.put(CacheConstant.SENTENCE_PAPER_TOKEN_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(30)));
         initialCacheConfiguration.put(CacheConstant.SENTENCE_TOKEN_WORD_FREQ_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(30)));
         initialCacheConfiguration.put(CacheConstant.PARAGRAPH_TOKEN_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(30)));
+//        initialCacheConfiguration.put(CacheConstant.REPORT_CONTENT_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(5)));
+        initialCacheConfiguration.put(CacheConstant.REPORT_CONTENT_MAP_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(5)));
         // 检测数据的缓存不需要保留很久
         initialCacheConfiguration.put(CacheConstant.CHECK_TASK_CONTENT_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(2)));
         initialCacheConfiguration.put(CacheConstant.CHECK_TASK_PARA_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(2)));

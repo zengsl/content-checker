@@ -4,6 +4,7 @@ import com.eva.check.common.enums.DataType;
 import com.eva.check.pojo.CheckTask;
 import com.eva.check.service.core.CheckTaskExecuteService;
 import com.eva.check.service.core.DuplicateCheckPrepareService;
+import com.eva.check.service.support.CheckReportService;
 import com.eva.check.service.support.CheckRequestService;
 import com.eva.check.service.support.CheckTaskService;
 import lombok.Getter;
@@ -24,6 +25,7 @@ abstract public class BaseCheckTaskExecuteService implements CheckTaskExecuteSer
     private final CheckRequestService checkRequestService;
     private final CheckTaskService checkTaskService;
     private final DuplicateCheckPrepareService duplicateCheckPrepareService;
+    private final CheckReportService checkReportService;
 
     @Override
     public void startAllTask(Long checkId, List<CheckTask> checkTaskList) {
@@ -59,8 +61,10 @@ abstract public class BaseCheckTaskExecuteService implements CheckTaskExecuteSer
     private void updateCheckRequest(Long checkId) {
 
         if (isTaskFinishedAfterAdd(checkId)) {
+            // 结束检测任务，收集检测结果
             this.checkRequestService.finishAndCollectResult(checkId);
-            // 触发报告生成任务
+            // 生成检测报告
+            this.checkReportService.initCheckReport(checkId);
         }
     }
 
@@ -69,7 +73,6 @@ abstract public class BaseCheckTaskExecuteService implements CheckTaskExecuteSer
      *
      * @param checkId 检测ID
      * @param total   任务总数
-     * @
      */
     abstract protected void initTaskTotal(Long checkId, Long total);
 

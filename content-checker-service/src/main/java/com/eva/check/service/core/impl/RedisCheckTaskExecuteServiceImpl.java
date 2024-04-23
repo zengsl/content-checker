@@ -2,6 +2,7 @@ package com.eva.check.service.core.impl;
 
 import com.eva.check.pojo.CheckRequest;
 import com.eva.check.service.core.DuplicateCheckPrepareService;
+import com.eva.check.service.support.CheckReportService;
 import com.eva.check.service.support.CheckRequestService;
 import com.eva.check.service.support.CheckTaskService;
 import lombok.extern.slf4j.Slf4j;
@@ -21,8 +22,8 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class RedisCheckTaskExecuteServiceImpl extends BaseCheckTaskExecuteService {
 
-    public RedisCheckTaskExecuteServiceImpl(CheckRequestService checkRequestService, CheckTaskService checkTaskService, DuplicateCheckPrepareService duplicateCheckPrepareService, RedisTemplate<String, Integer> redisTemplate) {
-        super(checkRequestService, checkTaskService, duplicateCheckPrepareService);
+    public RedisCheckTaskExecuteServiceImpl(CheckRequestService checkRequestService, CheckTaskService checkTaskService, DuplicateCheckPrepareService duplicateCheckPrepareService, RedisTemplate<String, Integer> redisTemplate, CheckReportService checkReportService) {
+        super(checkRequestService, checkTaskService, duplicateCheckPrepareService, checkReportService);
         this.redisTemplate = redisTemplate;
         this.hashOperations = redisTemplate.opsForHash();
     }
@@ -44,7 +45,7 @@ public class RedisCheckTaskExecuteServiceImpl extends BaseCheckTaskExecuteServic
         // 重启之后缓存可能是空的
         Long finishedTask;
         Object total2 = hashOperations.get("Content_Check:Id:" + checkId, TOTAL_KEY);
-        Long total = total2 == null ? 0L : Long.parseLong(total2.toString()) ;
+        Long total = total2 == null ? 0L : Long.parseLong(total2.toString());
         if (total == 0) {
             CheckRequest checkRequest = getCheckRequestService().getById(checkId);
             total = Long.valueOf(checkRequest.getTaskNum());

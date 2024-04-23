@@ -16,6 +16,8 @@ public interface CacheConstant {
     String SENTENCE_TOKEN_CACHE_KEY = CACHE_PREFIX + ":sentence_paper_token";
     String SENTENCE_PAPER_TOKEN_CACHE_KEY = CACHE_PREFIX + ":sentence_token";
     String SENTENCE_TOKEN_WORD_FREQ_CACHE_KEY = CACHE_PREFIX + ":sentence_token_word_freq";
+    String REPORT_CONTENT_CACHE_KEY = CACHE_PREFIX + ":report_content";
+    String REPORT_CONTENT_MAP_CACHE_KEY = CACHE_PREFIX + ":report_content_map";
     /*String CHECK_TASK_CACHE_KEY = CACHE_PREFIX + ":check_task";*/
     String CHECK_TASK_CONTENT_CACHE_KEY = CACHE_PREFIX + ":check_task_content";
     String CHECK_TASK_PARA_CACHE_KEY = CACHE_PREFIX + ":check_task_para";

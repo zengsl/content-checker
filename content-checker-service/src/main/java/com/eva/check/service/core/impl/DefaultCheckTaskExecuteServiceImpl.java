@@ -2,6 +2,7 @@ package com.eva.check.service.core.impl;
 
 import com.eva.check.pojo.CheckRequest;
 import com.eva.check.service.core.DuplicateCheckPrepareService;
+import com.eva.check.service.support.CheckReportService;
 import com.eva.check.service.support.CheckRequestService;
 import com.eva.check.service.support.CheckTaskService;
 import com.google.common.cache.CacheBuilder;
@@ -27,8 +28,8 @@ import java.util.concurrent.TimeUnit;
 public class DefaultCheckTaskExecuteServiceImpl extends BaseCheckTaskExecuteService {
 
 
-    public DefaultCheckTaskExecuteServiceImpl(CheckRequestService checkRequestService, CheckTaskService checkTaskService, DuplicateCheckPrepareService duplicateCheckPrepareService) {
-        super(checkRequestService, checkTaskService, duplicateCheckPrepareService);
+    public DefaultCheckTaskExecuteServiceImpl(CheckRequestService checkRequestService, CheckTaskService checkTaskService, DuplicateCheckPrepareService duplicateCheckPrepareService, CheckReportService checkReportService) {
+        super(checkRequestService, checkTaskService, duplicateCheckPrepareService,checkReportService);
     }
 
     LoadingCache<Long, Long> checkRequestCache = CacheBuilder.newBuilder().maximumSize(3)

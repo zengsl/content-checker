@@ -19,5 +19,9 @@ public interface PaperCollectService {
 
     void removePaperById(String paperId);
 
+    @Deprecated
+    default void updatePaper() {
+
+    }
 
 }

@@ -2,6 +2,9 @@ package com.eva.check.pojo.dto;
 
 import lombok.Data;
 
+import java.io.Serial;
+import java.io.Serializable;
+
 /**
  *
  * @author zengsl
@@ -9,7 +12,9 @@ import lombok.Data;
  */
 @Data
 public
-class SentencePairResult {
+class SentencePairResult implements Serializable {
+    @Serial
+    private static final long serialVersionUID = -5143178429159932013L;
     private String targetSentence;
     private String targetPart;
     private Double similarity;

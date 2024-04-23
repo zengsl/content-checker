@@ -10,14 +10,14 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * 检测报告 check_report
+ *
  * @author zzz
  */
 @EqualsAndHashCode(callSuper = true)
-@TableName(value ="check_report")
+@TableName(value = "check_report")
 @Data
 public class CheckReport extends BaseEntity implements Serializable {
     /**
@@ -35,6 +35,11 @@ public class CheckReport extends BaseEntity implements Serializable {
      * 验证标号
      */
     private String checkNo;
+
+    /**
+     * 报告内容
+     */
+    private String content;
 
     /**
      * 文件编号

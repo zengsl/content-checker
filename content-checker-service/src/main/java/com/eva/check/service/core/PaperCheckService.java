@@ -5,6 +5,7 @@ import com.eva.check.pojo.CheckReport;
 import com.eva.check.pojo.CheckRequest;
 import com.eva.check.pojo.dto.CheckReportDTO;
 import com.eva.check.pojo.dto.PaperCheckReq;
+import com.eva.check.pojo.vo.CheckReportContentDTO;
 
 import java.util.Map;
 
@@ -54,7 +55,7 @@ public interface PaperCheckService {
 
     CheckReportDTO getOrCreateReportFile(String checkNo) throws SystemException;
 
-    Map<String, Object> getPaperCheckReportParams(String checkNo) throws SystemException;
+    CheckReportContentDTO getPaperCheckReportParams(String checkNo) throws SystemException;
 
     CheckReport generateReportFile(String checkNo) throws SystemException;
 
