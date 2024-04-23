@@ -3,7 +3,7 @@ package com.eva.check.service.core.impl;
 
 import com.eva.check.common.util.SimilarUtil;
 import com.eva.check.pojo.CheckTask;
-import com.eva.check.service.core.SimilarityStrategy;
+import com.eva.check.service.core.SimilarityCollectStrategy;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.List;
  * @date 2023/11/25 16:12
  */
 @RequiredArgsConstructor
-public class DefaultSimilarityStrategy implements SimilarityStrategy {
+public class DefaultSimilarityCollectStrategy implements SimilarityCollectStrategy {
 
     @Override
     public Double computeFinalSimilarity(List<CheckTask> checkTaskList) {

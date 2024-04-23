@@ -8,7 +8,7 @@ import com.eva.check.common.enums.CheckRequestStatus;
 import com.eva.check.mapper.CheckRequestMapper;
 import com.eva.check.pojo.CheckRequest;
 import com.eva.check.pojo.CheckTask;
-import com.eva.check.service.core.SimilarityStrategy;
+import com.eva.check.service.core.SimilarityCollectStrategy;
 import com.eva.check.service.support.CheckRequestService;
 import com.eva.check.service.support.CheckTaskService;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ public class CheckRequestServiceImpl extends ServiceImpl<CheckRequestMapper, Che
     implements CheckRequestService {
 
     private final CheckTaskService checkTaskService;
-    private final SimilarityStrategy similarityStrategy;
+    private final SimilarityCollectStrategy similarityCollectStrategy;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -43,7 +43,7 @@ public class CheckRequestServiceImpl extends ServiceImpl<CheckRequestMapper, Che
     @Override
     public void finishAndCollectResult(Long checkId) {
         List<CheckTask> checkTaskList = this.checkTaskService.findByCheckId(checkId);
-        Double similarity = this.similarityStrategy.computeFinalSimilarity(checkTaskList);
+        Double similarity = this.similarityCollectStrategy.computeFinalSimilarity(checkTaskList);
         LambdaUpdateWrapper<CheckRequest> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(CheckRequest::getCheckId, checkId);
         updateWrapper.set(CheckRequest::getStatus, CheckRequestStatus.DONE.getValue());

@@ -10,7 +10,7 @@ import java.util.List;
  * @author zzz
  * @date 2023/11/25 16:12
  */
-public interface SimilarityStrategy {
+public interface SimilarityCollectStrategy {
 
     /**
      * 计算最终相似度

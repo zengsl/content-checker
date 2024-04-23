@@ -82,9 +82,9 @@ public class ContentCheckAutoConfiguration extends ElasticsearchConfiguration {
     }
 
     @Bean
-    SimilarityStrategy similarityStrategy() {
+    SimilarityCollectStrategy similarityStrategy() {
         // 相似度策略
-        return new DefaultSimilarityStrategy();
+        return new DefaultSimilarityCollectStrategy();
     }
 
     @Bean
