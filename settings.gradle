@@ -22,7 +22,7 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
             version("springBootVersion", '3.1.4')
-            version("hutoolVersion", "5.8.22")
+            version("hutoolVersion", "5.8.27")
             version("mybatisPlusVersion", "3.5.4")
             version("mapStructVersion", "1.5.5.Final")
             version("thymeleafExtraVersion", "3.0.4.RELEASE")
