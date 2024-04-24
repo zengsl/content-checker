@@ -30,6 +30,8 @@ public interface PaperCollectConverter {
     @Mapping(target = "hash4", ignore = true)
     @Mapping(target = "createTime", ignore = true)
     @Mapping(target = "updateTime", ignore = true)
+    @Mapping(target = "wordCount", ignore = true)
+    @Mapping(target = "paraCount", ignore = true)
     PaperInfo paperAddReq2Info(PaperAddReq paperAddReq);
 
     @Mapping(target = "paperId", ignore = true)

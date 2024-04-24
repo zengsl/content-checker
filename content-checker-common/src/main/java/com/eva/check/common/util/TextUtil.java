@@ -87,6 +87,13 @@ public class TextUtil {
         return splitSentence(document, DEFAULT_SENTENCE_SEPARATOR);
     }
 
+    /**
+     * 智能拆分句子
+     * <p>
+     * 按照常见的句子分隔符{@link TextUtil#DEFAULT_SENTENCE_SEPARATOR}进行拆分，如果拆分后句子长度小于阈值{@link TextUtil#MIN_SENTENCE_LENGTH}，则与后面句子合并。
+     *
+     * @param document 文档内容
+     */
     public static List<String> smartSplitSentence(String document) {
 
         String[] splitSentences = splitSentenceRemainSplitter(document);
@@ -263,5 +270,9 @@ public class TextUtil {
             result.put(entry.getKey(), entry.getValue());
         }
         return result;
+    }
+
+    public static Integer countWord(String content) {
+        return content == null || content.isEmpty() ? 0 : content.length();
     }
 }

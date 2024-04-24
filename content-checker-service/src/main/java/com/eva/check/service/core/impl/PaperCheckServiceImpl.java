@@ -7,6 +7,7 @@ import cn.hutool.core.util.ZipUtil;
 import com.eva.check.common.enums.*;
 import com.eva.check.common.exception.SystemException;
 import com.eva.check.common.util.FileUtil;
+import com.eva.check.common.util.TextUtil;
 import com.eva.check.pojo.CheckPaper;
 import com.eva.check.pojo.CheckReport;
 import com.eva.check.pojo.CheckRequest;
@@ -87,6 +88,8 @@ public class PaperCheckServiceImpl implements PaperCheckService {
         // 生成checkPaper
         CheckPaper checkPaper = PaperCheckConverter.INSTANCE.paperCheckReq2CheckPaper(paperCheckReq);
         checkPaper.setCheckId(checkRequest.getCheckId());
+        checkPaper.setWordCount(TextUtil.countWord(checkPaper.getContent()));
+        checkPaper.setParaCount(1);
         this.checkPaperService.save(checkPaper);
 
         // 按需生成task

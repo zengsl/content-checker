@@ -33,6 +33,10 @@ public class PaperParagraph extends BaseEntity {
 
     private String content;
 
+    private Integer wordCount;
+
+    private Integer sentenceCount;
+
     private Long hash;
     private String hash1;
     private String hash2;

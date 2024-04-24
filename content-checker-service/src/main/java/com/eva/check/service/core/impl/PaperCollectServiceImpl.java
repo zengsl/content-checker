@@ -50,6 +50,9 @@ public class PaperCollectServiceImpl implements PaperCollectService {
         // 生成论文编号
         String paperNo = StringUtils.hasText(paperInfo.getPaperNo()) ? paperInfo.getPaperNo() : NanoId.randomNanoId();
         paperInfo.setPaperNo(paperNo);
+        // 目前只当作一段考虑
+        paperInfo.setParaCount(1);
+        paperInfo.setWordCount(TextUtil.countWord(paperInfo.getContent()));
 
         // 生成指纹
         SimHashUtil.SimHash simHash = ParagraphUtil.buildFingerprint2(paperInfo.getContent());
@@ -65,8 +68,6 @@ public class PaperCollectServiceImpl implements PaperCollectService {
         boolean saveBatch = paperExtService.saveBatch(paperExtList);
         boolean isSaveSuccess = save && (CollectionUtil.isEmpty(paperExtList) || saveBatch);
 
-        // TODO 直接换成手动ID？
-
         // TODO 主数据保存成功之后开始 多线程处理文本数据
         if (!isSaveSuccess) {
             throw new SystemException(PaperErrorCode.SAVE_FAIL);
@@ -79,8 +80,7 @@ public class PaperCollectServiceImpl implements PaperCollectService {
         // 发起一个文章的文本处理任务 paperInfo
         DataType dataType = EnumUtils.getEnumByValue(paperInfo.getDataType(), DataType.class);
 
-        // TODO 目前段落和句子没有什么很大作用
-        // 【生成段落】 TODO 这里先考虑只有一段的情况
+        // 【生成段落】 目前按照一段的情况进行处理
         PaperParagraph paperParagraph = PaperParagraph.builder()
                 .paperId(paperInfo.getPaperId())
                 .paragraphNum(1L)
@@ -94,14 +94,22 @@ public class PaperCollectServiceImpl implements PaperCollectService {
                 .build();
         paperParagraph.setCreateTime(LocalDateTime.now());
         paperParagraph.setUpdateTime(LocalDateTime.now());
-        boolean save1 = paperParagraphService.save(paperParagraph);
-
-        this.paperCoreService.collectParagraph(paperParagraph);
-
+        // 设置字数
+        paperParagraph.setWordCount(TextUtil.countWord(paperInfo.getContent()));
         String paragraphContent = paperInfo.getContent();
         // 如果 paragraphContent 长度大与X 则开始分句
         // 【生成句子】
         List<String> sentenceList = TextUtil.smartSplitSentence(paragraphContent);
+        // 设置句子数量
+        paperParagraph.setSentenceCount(sentenceList.size());
+
+        boolean savePara = paperParagraphService.save(paperParagraph);
+        if (!savePara) {
+            throw new SystemException(PaperErrorCode.SAVE_FAIL);
+        }
+        this.paperCoreService.collectParagraph(paperParagraph);
+
+
         AtomicLong num = new AtomicLong();
         sentenceList.forEach(sentence -> {
             // 文本处理 + 分词
@@ -119,6 +127,7 @@ public class PaperCollectServiceImpl implements PaperCollectService {
                     .sentenceNum(num.incrementAndGet())
                     .originContent(sentence)
                     .content(newSentence)
+                    .wordCount(TextUtil.countWord(sentence))
                     .hash(hash)
                     .hash1(sentenceSimHashList.get(0))
                     .hash2(sentenceSimHashList.get(1))
@@ -141,7 +150,6 @@ public class PaperCollectServiceImpl implements PaperCollectService {
 
             Assert.isTrue(save2, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));
         });
-
 
         // TODO 先不考虑扩展信息
         return paperInfo.getPaperNo();

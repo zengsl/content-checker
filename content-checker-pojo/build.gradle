@@ -2,6 +2,8 @@ dependencies {
     api project(':content-checker-common')
     api libs.mybatis.plus
     implementation libs.mapStruct
+    implementation libs.jackson.databind
+    implementation libs.jackson.datatype.jsr310
     annotationProcessor libs.mapStructProcessor
 //    implementation libs.mybatis.plus
 }

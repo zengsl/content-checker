@@ -36,7 +36,11 @@
                 <p>
                     作者：<span th:text="${checkRequest.author}" class="me-5"></span>
                     发布年份：<span th:text="${checkRequest.publishYear}"></span>
+
+
                 </p>
+                <di> 总字数：<span th:text="${wordCount}"></span></di>
+                <di>  句子数：<span th:text="${sentenceCount}"></span></di>
                 <div>提交时间：<span
                         th:text="${#temporals.format(checkRequest.createTime, 'yyyy-MM-dd HH:mm:ss')}"></span></div>
                 <div class="mt-1">检测编号：<span th:text="${checkRequest.checkNo}"/></div>

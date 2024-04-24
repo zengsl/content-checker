@@ -42,6 +42,8 @@ public class PaperSentence extends BaseEntity implements Serializable {
 
     private   String content;
 
+    private Integer wordCount;
+
     private   Long hash;
 
     private String hash1;

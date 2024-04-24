@@ -57,6 +57,8 @@ public interface ReportConverter {
         params.put("similarSentenceResultMap", checkReportContentDTO.getSimilarSentenceResultMap());
         params.put("allSimilarPaperList", checkReportContentDTO.getAllSimilarPaperList());
         params.put("isDownload", checkReportContentDTO.getIsDownload());
+        params.put("wordCount", checkReportContentDTO.getWordCount());
+        params.put("sentenceCount", checkReportContentDTO.getSentenceCount());
         return params;
     }
 

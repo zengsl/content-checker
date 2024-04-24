@@ -62,11 +62,15 @@ public class ContentDuplicateCheckPrepareServiceImpl implements DuplicateCheckPr
         }
         // 生成检测文本的指纹信息
         SimHashUtil.SimHash simHash = ParagraphUtil.buildFingerprint2(checkTask.getContent());
+        // 生成句子
+        List<String> sentenceList = TextUtil.smartSplitSentence(checkTask.getContent());
         // 生成检测段落
         CheckParagraph checkParagraph = CheckParagraph.builder()
                 .paperNo(checkTask.getPaperNo())
                 .paperId(checkTask.getPaperId())
                 .paragraphNum(1)
+                .sentenceCount(sentenceList.size())
+                .wordCount(TextUtil.countWord(checkTask.getContent()))
                 .checkId(checkTask.getCheckId())
                 .taskId(checkTask.getTaskId())
                 .content(checkTask.getContent())
@@ -77,8 +81,7 @@ public class ContentDuplicateCheckPrepareServiceImpl implements DuplicateCheckPr
                 .hash4(simHash.getSimHash4())
                 .build();
         this.checkParagraphService.save(checkParagraph);
-        // 生成句子
-        List<String> sentenceList = TextUtil.smartSplitSentence(checkTask.getContent());
+
         List<CheckSentence> checkSentenceList = Lists.newArrayListWithCapacity(sentenceList.size());
         for (int i = 0; i < sentenceList.size(); i++) {
             String sentence = sentenceList.get(i);
@@ -86,6 +89,7 @@ public class ContentDuplicateCheckPrepareServiceImpl implements DuplicateCheckPr
             CheckSentence checkSentence = CheckSentence.builder()
                     .sentenceNum(i + 1)
                     .paragraphId(checkParagraph.getParagraphId())
+                    .wordCount(TextUtil.countWord(sentence))
                     .originContent(sentence)
                     .content(TextUtil.pretreatment(sentence))
                     .build();

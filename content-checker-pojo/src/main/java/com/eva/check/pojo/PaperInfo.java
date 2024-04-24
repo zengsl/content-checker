@@ -39,6 +39,10 @@ public class PaperInfo extends BaseEntity {
 
     private String content;
 
+    private Integer wordCount;
+
+    private Integer paraCount;
+
     /**
      * hash值
      */

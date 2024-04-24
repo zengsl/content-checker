@@ -11,6 +11,7 @@ import com.eva.check.common.enums.CheckReportStatus;
 import com.eva.check.common.enums.CompressType;
 import com.eva.check.common.util.JacksonUtil;
 import com.eva.check.mapper.CheckReportMapper;
+import com.eva.check.pojo.CheckParagraph;
 import com.eva.check.pojo.CheckReport;
 import com.eva.check.pojo.CheckRequest;
 import com.eva.check.pojo.CheckTask;
@@ -19,10 +20,7 @@ import com.eva.check.pojo.dto.PaperResult;
 import com.eva.check.pojo.vo.CheckReportContentDTO;
 import com.eva.check.pojo.vo.SimilarPaperVO;
 import com.eva.check.service.core.SimilarPaperService;
-import com.eva.check.service.support.CheckPaperService;
-import com.eva.check.service.support.CheckReportService;
-import com.eva.check.service.support.CheckRequestService;
-import com.eva.check.service.support.CheckTaskService;
+import com.eva.check.service.support.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 针对表【check_report(检测报告)】的数据库操作Service实现
@@ -47,6 +46,7 @@ public class CheckReportServiceImpl extends ServiceImpl<CheckReportMapper, Check
     private final CheckTaskService checkTaskService;
     private final SimilarPaperService similarPaperService;
     private final CheckPaperService checkPaperService;
+    private final CheckParagraphService checkParagraphService;
 
     @Transactional(readOnly = true)
     @Override
@@ -121,27 +121,25 @@ public class CheckReportServiceImpl extends ServiceImpl<CheckReportMapper, Check
         CheckTask contentCheckTask = this.checkTaskService.findContentCheckTask(checkRequest.getCheckNo());
         PaperResult paperResult = this.similarPaperService.assemblePaperResult(contentCheckTask.getTaskId());
         List<SimilarPaperVO> allSimilarPaperList = this.checkPaperService.getAllSimilarPaper(contentCheckTask.getPaperId());
+        List<CheckParagraph> checkParagraphList = this.checkParagraphService.getByTaskId(contentCheckTask.getTaskId());
+        AtomicReference<Integer> wordCount = new AtomicReference<>(0);
+        AtomicReference<Integer> sentenceCount = new AtomicReference<>(0);
+        checkParagraphList.forEach(checkParagraph -> {
+            wordCount.updateAndGet(v -> v + checkParagraph.getWordCount());
+            sentenceCount.updateAndGet(v -> v + checkParagraph.getSentenceCount());
+        });
 
-
-        CheckReportContentDTO checkReportContentDTO = CheckReportContentDTO.builder()
+        return CheckReportContentDTO.builder()
                 .finalSimilarity(NumberUtil.decimalFormat("#.##%", checkRequest.getSimilarity()))
                 .checkRequest(checkRequest)
+                .wordCount(wordCount.get())
+                .sentenceCount(sentenceCount.get())
                 .contentCheckTask(contentCheckTask)
                 .reportParagraphs(ReportConverter.INSTANCE.paperResult2paragraphVO(paperResult))
                 .similarSentenceResultMap(ReportConverter.INSTANCE.paperResult2SentenceMap(paperResult))
                 .allSimilarPaperList(allSimilarPaperList)
                 .isDownload(true)
                 .build();
-
-        /*Map<String, Object> params = Maps.newHashMap();
-        params.put("finalSimilarity", NumberUtil.decimalFormat("#.##%", checkRequest.getSimilarity()));
-        params.put("checkRequest", checkRequest);
-        params.put("contentCheckTask", contentCheckTask);
-        params.put("reportParagraphs", ReportConverter.INSTANCE.paperResult2paragraphVO(paperResult));
-        params.put("similarSentenceResultMap", ReportConverter.INSTANCE.paperResult2SentenceMap(paperResult));
-        params.put("allSimilarPaperList", allSimilarPaperList);
-        params.put("isDownload", true);*/
-        return checkReportContentDTO;
     }
 
     @Transactional(readOnly = true)

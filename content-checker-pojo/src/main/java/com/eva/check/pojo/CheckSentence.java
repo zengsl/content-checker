@@ -50,6 +50,8 @@ public class CheckSentence extends BaseEntity implements Serializable {
      */
     private String content;
 
+    private Integer wordCount;
+
     /**
      * 相似度
      */

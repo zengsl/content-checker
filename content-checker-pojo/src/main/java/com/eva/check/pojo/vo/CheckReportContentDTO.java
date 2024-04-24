@@ -29,4 +29,6 @@ public class CheckReportContentDTO implements Serializable {
     private Map<Long, SentenceResult> similarSentenceResultMap;
     private List<SimilarPaperVO> allSimilarPaperList;
     private Boolean isDownload;
+    private Integer wordCount;
+    private Integer sentenceCount;
 }

@@ -60,6 +60,10 @@ public class CheckParagraph extends BaseEntity implements Serializable {
      */
     private String content;
 
+    private Integer wordCount;
+
+    private Integer sentenceCount;
+
     /**
      * 相似度
      */

@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -21,6 +22,9 @@ import java.io.Serializable;
 @Data
 @Builder
 public class CheckPaper extends BaseEntity implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = -8536873735849369148L;
 
     /**
      * 段落主键
@@ -47,6 +51,10 @@ public class CheckPaper extends BaseEntity implements Serializable {
      * 文本内容
      */
     private String content;
+
+    private Integer wordCount;
+
+    private Integer paraCount;
 
     /**
      * 相似度
