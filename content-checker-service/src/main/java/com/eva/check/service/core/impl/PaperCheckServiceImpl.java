@@ -150,7 +150,7 @@ public class PaperCheckServiceImpl implements PaperCheckService {
         String paperNo = StringUtils.hasText(paperAddReq.getPaperNo()) ? paperAddReq.getPaperNo() : NanoId.randomNanoId();
         // 入库前设置编号
         paperAddReq.setPaperNo(paperNo);
-        // 收录至文档库
+        // 收录至文档库。 后阶段可以考虑异步执行收录流程，但需保证其可靠性。
         paperCollectService.addNewPaper(paperAddReq);
         // 检测前设置编号，以防检测时进行同一文件检测
         paperCheckReq.setPaperNo(paperNo);
