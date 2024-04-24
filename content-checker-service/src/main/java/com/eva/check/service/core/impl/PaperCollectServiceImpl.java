@@ -1,6 +1,7 @@
 package com.eva.check.service.core.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.lang.id.NanoId;
 import com.eva.check.common.enums.DataType;
@@ -17,6 +18,7 @@ import com.eva.check.service.core.PaperCollectService;
 import com.eva.check.service.core.PaperCoreService;
 import com.eva.check.service.support.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -33,6 +35,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PaperCollectServiceImpl implements PaperCollectService {
 
     private final PaperInfoService paperInfoService;
@@ -68,7 +71,6 @@ public class PaperCollectServiceImpl implements PaperCollectService {
         boolean saveBatch = paperExtService.saveBatch(paperExtList);
         boolean isSaveSuccess = save && (CollectionUtil.isEmpty(paperExtList) || saveBatch);
 
-        // TODO 主数据保存成功之后开始 多线程处理文本数据
         if (!isSaveSuccess) {
             throw new SystemException(PaperErrorCode.SAVE_FAIL);
         }
@@ -108,10 +110,17 @@ public class PaperCollectServiceImpl implements PaperCollectService {
             throw new SystemException(PaperErrorCode.SAVE_FAIL);
         }
         this.paperCoreService.collectParagraph(paperParagraph);
+        handleSentence(sentenceList, paperParagraph.getParagraphId());
 
+        // TODO 先不考虑扩展信息
+        return paperInfo.getPaperNo();
+    }
 
+    private void handleSentence(List<String> sentenceList, Long paraId) {
         AtomicLong num = new AtomicLong();
-        sentenceList.forEach(sentence -> {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start("批量处理句子，段落paraId:" + paraId);
+        sentenceList.stream().parallel().forEach(sentence -> {
             // 文本处理 + 分词
             String newSentence = TextUtil.pretreatment(sentence);
             // 分词 + 去除停顿词
@@ -123,7 +132,7 @@ public class PaperCollectServiceImpl implements PaperCollectService {
 //            paperKeywordList.addAll(newKeywordList);
             // 存句子信息
             PaperSentence paperSentence = PaperSentence.builder()
-                    .paragraphId(paperParagraph.getParagraphId())
+                    .paragraphId(paraId)
                     .sentenceNum(num.incrementAndGet())
                     .originContent(sentence)
                     .content(newSentence)
@@ -141,7 +150,7 @@ public class PaperCollectServiceImpl implements PaperCollectService {
                 PaperToken paperToken = PaperToken.builder()
                         .tokenNum(num2.incrementAndGet())
                         .sentenceId(paperSentence.getSentenceId())
-                        .paragraphId(paperParagraph.getParagraphId())
+                        .paragraphId(paraId)
                         .content(keyword)
                         .build();
                 boolean save3 = paperTokenService.save(paperToken);
@@ -150,9 +159,8 @@ public class PaperCollectServiceImpl implements PaperCollectService {
 
             Assert.isTrue(save2, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));
         });
-
-        // TODO 先不考虑扩展信息
-        return paperInfo.getPaperNo();
+        stopWatch.stop();
+        log.info("段落paraId:{} 批量处理句子耗时：{}s", paraId, stopWatch.getTotalTimeSeconds());
     }
 
     private static void checkParams(PaperAddReq paperAddReq) {

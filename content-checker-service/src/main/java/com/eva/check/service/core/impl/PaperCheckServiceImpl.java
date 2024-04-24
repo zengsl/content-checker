@@ -106,7 +106,7 @@ public class PaperCheckServiceImpl implements PaperCheckService {
             checkTaskList.add(contentCheckTask);
         }
 
-        // TODO 目前不考虑
+        // 目前不考虑TITLE比对，可能会删除
         if (StringUtils.hasText(paperCheckReq.getContent())) {
             CheckTask titleCheckTask = new CheckTask();
             titleCheckTask.setCheckId(checkRequest.getCheckId())
@@ -144,14 +144,13 @@ public class PaperCheckServiceImpl implements PaperCheckService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public String createPaperCheckAndCollect(PaperCheckReq paperCheckReq) throws SystemException {
+        // 初始化收录请求
         PaperAddReq paperAddReq = PaperCollectConverter.INSTANCE.check2AddReq(paperCheckReq);
-
         // 生成论文编号
         String paperNo = StringUtils.hasText(paperAddReq.getPaperNo()) ? paperAddReq.getPaperNo() : NanoId.randomNanoId();
         // 入库前设置编号
         paperAddReq.setPaperNo(paperNo);
         // 收录至文档库
-        // TODO 可以异步
         paperCollectService.addNewPaper(paperAddReq);
         // 检测前设置编号，以防检测时进行同一文件检测
         paperCheckReq.setPaperNo(paperNo);
