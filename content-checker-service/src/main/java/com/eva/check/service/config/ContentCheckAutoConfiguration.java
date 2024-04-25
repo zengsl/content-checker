@@ -52,6 +52,7 @@ import org.springframework.data.elasticsearch.client.elc.ElasticsearchConfigurat
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.lang.Nullable;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.util.Assert;
 
 import java.time.LocalDate;
@@ -73,6 +74,7 @@ import java.util.function.Consumer;
 @RequiredArgsConstructor
 @EnableCaching
 @EnableElasticsearchRepositories("com.eva.check.service.es.repository")
+@EnableScheduling
 public class ContentCheckAutoConfiguration extends ElasticsearchConfiguration {
 
     private final ElasticsearchProperties elasticsearchProperties;

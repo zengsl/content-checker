@@ -33,6 +33,12 @@ public class ContentCollectController {
         return "collect/add";
     }
 
+
+    @GetMapping("batch")
+    public String batchImportPage() {
+        return "collect/batchImport";
+    }
+
     @PostMapping
     @ResponseBody
     public R<String> submitCollectPage(PaperCollectVO paperCollectVO) {

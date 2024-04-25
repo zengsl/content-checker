@@ -25,6 +25,7 @@ public class PaperBaseEntity extends BaseEntity{
 
     private String publishYear;
 
+    @Deprecated
     private List<PaperExtDto> paperExtList;
 
     /**

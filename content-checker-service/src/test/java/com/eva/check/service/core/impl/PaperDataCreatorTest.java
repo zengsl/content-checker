@@ -1,9 +1,12 @@
 package com.eva.check.service.core.impl;
 
+import com.eva.check.pojo.ImportPaper;
+import com.eva.check.pojo.converter.ImportPaperConverter;
 import com.eva.check.pojo.dto.PaperAddReq;
 import com.eva.check.service.config.ContentCheckAutoConfiguration;
 import com.eva.check.service.core.PaperCollectService;
 import com.eva.check.service.es.repository.PaperParagraphRepository;
+import com.eva.check.service.support.ImportPaperService;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +21,8 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @SpringBootTest
@@ -27,6 +32,9 @@ public class PaperDataCreatorTest {
 
     @Autowired
     private PaperCollectService paperCollectService;
+
+    @Autowired
+    private ImportPaperService importPaperService;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -45,6 +53,9 @@ public class PaperDataCreatorTest {
         testClearData();
         testInitData();
     }
+
+
+
 
     @Test
     void testInitData() throws IOException, URISyntaxException {
@@ -109,5 +120,42 @@ public class PaperDataCreatorTest {
     @Test
     void testClearRocketMq() {
         /*this.rocketMQTemplate.getProducer().*/
+    }
+
+    @Test
+    void testCreateImportData()  throws IOException, URISyntaxException {
+        Path directory = Paths.get(Objects.requireNonNull(PaperDataCreatorTest.class.getClassLoader().getResource(INIT_DATA_PATH)).toURI());
+        List<ImportPaper> importPapers = new ArrayList<>();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
+            int i =0 ;
+            // 测试文件不多，这里就不用多线程了
+            for (Path file : stream) {
+                System.out.println(file);
+                if (Files.isDirectory(file)) {
+                    continue;
+                }
+                // 这里直接读取文件里面的内容
+                String content = Files.readString(file);
+                PaperAddReq paperAddReq = new PaperAddReq();
+                paperAddReq.setContent(content)
+                        .setTitle("测试数据" + (++i))
+                        .setAuthor(file.getFileName().toString())
+                        .setPaperNo("test:" + i);
+                ImportPaper importReq = ImportPaperConverter.INSTANCE.toImportReq(paperAddReq);
+                importPapers.add(importReq);
+            }
+        }
+        importPaperService.saveBatch(importPapers);
+    }
+
+    @Test
+    void testResetImportData() {
+        this.jdbcTemplate.execute("update  import_paper t set t.status = '0'");
+
+    }
+
+    @Test
+    void testClearImportData() {
+        this.jdbcTemplate.execute("delete from import_paper");
     }
 }
