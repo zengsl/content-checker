@@ -42,9 +42,6 @@ public class PaperDataCreatorTest {
     @Autowired
     private PaperParagraphRepository paperParagraphRepository;
 
-    @Autowired
-    private RocketMQTemplate rocketMQTemplate;
-
     public static final String INIT_DATA_PATH = "initDataWx";
 
 
@@ -53,9 +50,6 @@ public class PaperDataCreatorTest {
         testClearData();
         testInitData();
     }
-
-
-
 
     @Test
     void testInitData() throws IOException, URISyntaxException {
@@ -82,6 +76,30 @@ public class PaperDataCreatorTest {
         }
     }
 
+    @Test
+    void testInitMuchData() throws IOException, URISyntaxException{
+        Path directory = Paths.get(Objects.requireNonNull(PaperDataCreatorTest.class.getClassLoader().getResource("initDataSX")).toURI());
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
+            int i =0 ;
+            // 测试文件不多，这里就不用多线程了
+            for (Path file : stream) {
+                System.out.println(file);
+                if (Files.isDirectory(file)) {
+                    continue;
+                }
+                // 这里直接读取文件里面的内容
+                String content = Files.readString(file);
+                PaperAddReq paperAddReq = new PaperAddReq();
+                paperAddReq.setContent(content)
+                        .setTitle("测试数据" + (++i))
+                        .setAuthor(file.getFileName().toString())
+                        .setPaperNo("test:" + i)
+                ;
+                paperCollectService.addNewPaper(paperAddReq);
+
+            }
+        }
+    }
 
     @Test
     void testClearData() {

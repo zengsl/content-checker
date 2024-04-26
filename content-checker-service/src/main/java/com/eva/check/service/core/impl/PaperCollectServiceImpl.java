@@ -17,6 +17,7 @@ import com.eva.check.pojo.dto.PaperAddReq;
 import com.eva.check.service.core.PaperCollectService;
 import com.eva.check.service.core.PaperCoreService;
 import com.eva.check.service.support.*;
+import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -48,6 +49,8 @@ public class PaperCollectServiceImpl implements PaperCollectService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public String addNewPaper(PaperAddReq paperAddReq) {
+        StopWatch stopWatch = new StopWatch("文章录入任务");
+        stopWatch.start("准备工作");
         checkParams(paperAddReq);
         PaperInfo paperInfo = PaperCollectConverter.INSTANCE.paperAddReq2Info(paperAddReq);
         // 生成论文编号
@@ -57,6 +60,9 @@ public class PaperCollectServiceImpl implements PaperCollectService {
         paperInfo.setParaCount(1);
         paperInfo.setWordCount(TextUtil.countWord(paperInfo.getContent()));
 
+        stopWatch.stop();
+        stopWatch.start("生成指纹");
+
         // 生成指纹
         SimHashUtil.SimHash simHash = ParagraphUtil.buildFingerprint2(paperInfo.getContent());
         paperInfo.setHash(simHash.getSimHash());
@@ -64,6 +70,10 @@ public class PaperCollectServiceImpl implements PaperCollectService {
         paperInfo.setHash2(simHash.getSimHash2());
         paperInfo.setHash3(simHash.getSimHash3());
         paperInfo.setHash4(simHash.getSimHash4());
+
+        stopWatch.stop();
+        stopWatch.start("文章、段落存储工作");
+
         // 保存论文基本的信息
         boolean save = paperInfoService.save(paperInfo);
         List<PaperExt> paperExtList = PaperCollectConverter.INSTANCE.paperAddReq2Ext(paperAddReq.getPaperExtList(), paperInfo.getPaperId());
@@ -80,7 +90,7 @@ public class PaperCollectServiceImpl implements PaperCollectService {
             return paperNo;
         }
         // 发起一个文章的文本处理任务 paperInfo
-        DataType dataType = EnumUtils.getEnumByValue(paperInfo.getDataType(), DataType.class);
+//        DataType dataType = EnumUtils.getEnumByValue(paperInfo.getDataType(), DataType.class);
 
         // 【生成段落】 目前按照一段的情况进行处理
         PaperParagraph paperParagraph = PaperParagraph.builder()
@@ -109,9 +119,17 @@ public class PaperCollectServiceImpl implements PaperCollectService {
         if (!savePara) {
             throw new SystemException(PaperErrorCode.SAVE_FAIL);
         }
-        this.paperCoreService.collectParagraph(paperParagraph);
-        handleSentence(sentenceList, paperParagraph.getParagraphId());
 
+        stopWatch.stop();
+        stopWatch.start("Es收录段落");
+
+        this.paperCoreService.collectParagraph(paperParagraph);
+
+        stopWatch.stop();
+        stopWatch.start("处理句子");
+        handleSentence(sentenceList, paperParagraph.getParagraphId());
+        stopWatch.stop();
+        log.info("【addNewPaper】方法执行结束 ，耗时：{}s ，详情：{}", stopWatch.getTotalTimeSeconds(), stopWatch.prettyPrint());
         // TODO 先不考虑扩展信息
         return paperInfo.getPaperNo();
     }
@@ -128,8 +146,6 @@ public class PaperCollectServiceImpl implements PaperCollectService {
             long hash = SimHashUtil.hash(newKeywordList);
             List<String> sentenceSimHashList = SimHashUtil.splitSimHash(hash);
 
-            // 汇总整篇文章的关键词
-//            paperKeywordList.addAll(newKeywordList);
             // 存句子信息
             PaperSentence paperSentence = PaperSentence.builder()
                     .paragraphId(paraId)
@@ -144,7 +160,10 @@ public class PaperCollectServiceImpl implements PaperCollectService {
                     .hash4(sentenceSimHashList.get(3))
                     .build();
             boolean save2 = paperSentenceService.save(paperSentence);
+            Assert.isTrue(save2, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));
+
             AtomicLong num2 = new AtomicLong();
+            List<PaperToken> paperTokenList = Lists.newArrayList();
             newKeywordList.forEach(keyword -> {
                 // 存关键词信息
                 PaperToken paperToken = PaperToken.builder()
@@ -153,11 +172,11 @@ public class PaperCollectServiceImpl implements PaperCollectService {
                         .paragraphId(paraId)
                         .content(keyword)
                         .build();
-                boolean save3 = paperTokenService.save(paperToken);
-                Assert.isTrue(save3, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));
-            });
+                paperTokenList.add(paperToken);
 
-            Assert.isTrue(save2, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));
+            });
+            boolean save3 = paperTokenService.saveBatch(paperTokenList);
+            Assert.isTrue(save3, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));
         });
         stopWatch.stop();
         log.info("段落paraId:{} 批量处理句子耗时：{}s", paraId, stopWatch.getTotalTimeSeconds());
