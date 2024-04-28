@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.lang.id.NanoId;
+import com.eva.check.common.constant.ContentCheckConstant;
 import com.eva.check.common.enums.PaperErrorCode;
 import com.eva.check.common.exception.SystemException;
 import com.eva.check.common.util.ParagraphUtil;
@@ -124,7 +125,8 @@ public class PaperCollectServiceImpl implements PaperCollectService {
         this.paperCoreService.collectParagraph(paperParagraph);
 
         stopWatch.stop();
-        stopWatch.start("处理句子");
+        log.info("段落{}基本信息: {}, 总字数：{}", paperParagraph.getParagraphId(), paperParagraph.getParagraphId(), paperParagraph.getWordCount());
+        stopWatch.start("处理句子handleSentence");
         handleSentence(sentenceList, paperParagraph.getParagraphId());
         stopWatch.stop();
         log.info("【addNewPaper】方法执行结束 ，耗时：{}s ，详情：{}", stopWatch.getTotalTimeSeconds(), stopWatch.prettyPrint());
@@ -138,9 +140,6 @@ public class PaperCollectServiceImpl implements PaperCollectService {
         AtomicLong num = new AtomicLong();
         List<PaperSentence> paperSentenceList = Lists.newArrayListWithCapacity(sentenceList.size());
         List<List<String>> paperSentenceKeywordList = Lists.newArrayListWithCapacity(sentenceList.size());
-
-        List<PaperToken> paperTokenList = Lists.newArrayList();
-        log.info("待处理句子总量：{}", sentenceList.size());
         sentenceList.stream().parallel().forEach(sentence -> {
             // 文本处理 + 分词
             String newSentence = TextUtil.pretreatment(sentence);
@@ -163,29 +162,11 @@ public class PaperCollectServiceImpl implements PaperCollectService {
                     .hash4(sentenceSimHashList.get(3))
                     .build();
 
-            /*paperSentenceList.add(paperSentence);*/
+            paperSentenceList.add(paperSentence);
             paperSentenceKeywordList.add(newKeywordList);
-            /*System.out.println(paperSentenceList.size() + " | " + paperSentenceKeywordList.size());*/
-            boolean sentenceSave = paperSentenceService.save(paperSentence);
-            Assert.isTrue(sentenceSave, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));
-            AtomicLong tokenNum = new AtomicLong();
 
-            newKeywordList.forEach(keyword -> {
-                // 存关键词信息
-                PaperToken paperToken = PaperToken.builder()
-                        .tokenNum(tokenNum.incrementAndGet())
-                        .sentenceId(paperSentence.getSentenceId())
-                        .paragraphId(paraId)
-                        .content(keyword)
-                        .build();
-                paperTokenList.add(paperToken);
-
-            });
-            /*
-            boolean tokenSave = paperTokenService.saveBatch(paperTokenList);
-            Assert.isTrue(tokenSave, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));*/
         });
-        /*AtomicLong tokenNum = new AtomicLong();
+        AtomicLong tokenNum = new AtomicLong();
         List<PaperToken> paperTokenList = Lists.newArrayList();
         for (int i = 0, size = paperSentenceKeywordList.size(); i < size; i++) {
             List<String> keywordList = paperSentenceKeywordList.get(i);
@@ -200,18 +181,15 @@ public class PaperCollectServiceImpl implements PaperCollectService {
                         .build();
                 paperTokenList.add(paperToken);
             }
-        }*/
-
-        log.info("待处理分词总量：{}", paperTokenList.size());
-
-       /* boolean sentenceSave = paperSentenceService.saveBatch(paperSentenceList);
-        Assert.isTrue(sentenceSave, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));*/
-        boolean tokenSave = paperTokenService.saveBatch(paperTokenList);
+        }
+        boolean sentenceSave = paperSentenceService.saveBatch(paperSentenceList, ContentCheckConstant.SENTENCE_BATCH_SIZE);
+        Assert.isTrue(sentenceSave, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));
+        boolean tokenSave = paperTokenService.saveBatch(paperTokenList, ContentCheckConstant.SENTENCE_BATCH_SIZE);
         Assert.isTrue(tokenSave, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));
-
-
         stopWatch.stop();
-        log.info("段落paraId:{} 批量处理句子耗时：{}s", paraId, stopWatch.getTotalTimeSeconds());
+        log.info("待处理句子总量：{}", sentenceList.size());
+        log.info("待处理分词总量：{}", paperTokenList.size());
+        log.info("段落paraId:{} 批量处理句子与句子分词耗时：{}s", paraId, stopWatch.getTotalTimeSeconds());
     }
 
     private static void checkParams(PaperAddReq paperAddReq) {

@@ -17,4 +17,6 @@ public interface ContentCheckConstant {
 
     Double SIMILARITY_ZERO = 0D;
     Double SIMILARITY_INIT = -1D;
+
+    Integer SENTENCE_BATCH_SIZE = 10000;
 }

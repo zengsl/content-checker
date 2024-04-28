@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/content-checker?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://localhost:3306/content-checker?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
     username: root
     password: root
   elasticsearch:
@@ -25,6 +25,8 @@ rocketmq:
 
 
 mybatis-plus:
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   mapperLocations: classpath*:/mapper/**/*.xml
   typeAliasesPackage: com.eva.check.pojo
   globalConfig:
