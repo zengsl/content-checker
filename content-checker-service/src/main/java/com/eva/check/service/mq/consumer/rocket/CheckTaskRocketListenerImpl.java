@@ -1,6 +1,8 @@
 package com.eva.check.service.mq.consumer.rocket;
 
 import com.eva.check.common.constant.MessageQueueConstants;
+import com.eva.check.common.enums.PaperErrorCode;
+import com.eva.check.common.exception.SystemException;
 import com.eva.check.pojo.CheckTask;
 import com.eva.check.service.core.CheckTaskExecuteService;
 import com.eva.check.service.mq.common.constant.MqQueue;
@@ -71,6 +73,10 @@ public class CheckTaskRocketListenerImpl {
                 this.checkTaskExecuteService.finishTask(checkTask);
             } catch (DuplicateKeyException e) {
                 log.warn("疑似因为消息重复消费，导致发生重复Key异常。对该异常进行捕获，防止向外抛出从而引起MQ重试", e);
+            }catch (SystemException e) {
+                if (e.getErrorCode().equals(PaperErrorCode.DATA_NOT_EXIST)) {
+                    log.warn("疑似因为消息重复消费，导致发生重复Key异常。对该异常进行捕获，防止向外抛出从而引起MQ重试", e);
+                }
             }
         }
     }

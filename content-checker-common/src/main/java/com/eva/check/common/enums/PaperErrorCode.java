@@ -17,6 +17,7 @@ public enum PaperErrorCode implements ErrorCode {
      */
     PARAM_INVALID("param_invalid", "参数无效"),
     REPORT_NOT_EXIST("report_not_exist", "报告不存在"),
+    DATA_NOT_EXIST("data_not_exist", "数据不存在"),
     SAVE_FAIL("save_fail", "保存失败");
 
     private final String code;

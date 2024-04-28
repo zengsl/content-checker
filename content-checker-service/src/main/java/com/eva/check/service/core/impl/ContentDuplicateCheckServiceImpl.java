@@ -290,7 +290,7 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
             // 设置段落的相似度,并将结果设置为结束
             double similarity = 0D;
             if (checkSentenceList.isEmpty()) {
-                log.error("checkSentenceList is empty, ParagraphId: {}", checkParagraph.getParagraphId());
+                log.warn("异常数据，检测句子数为空。可能数据库中数据已经清理，但是MQ中进行了重新投递，taskId:{}， ParagraphId:{}", checkTask.getTaskId(), checkParagraph.getParagraphId());
             } else {
                 similarity = sentenceSimilarityCounter.doubleValue() / checkSentenceList.size();
             }
@@ -305,8 +305,12 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
         // 批量更新【检测段落】的结果
         this.checkParagraphService.updateBatchById(checkParagraphList);
         // 段落相似度综合
-        double taskSimilarity = SimilarUtil.formatSimilarity(paragraphSimilarityCounter / checkParagraphList.size());
-        checkTask.setSimilarity(taskSimilarity);
+        if (checkParagraphList.isEmpty()) {
+            log.warn("异常数据，检测段落数为空。可能数据库中数据已经清理，但是MQ中进行了重新投递，taskId:{}", checkTask.getTaskId());
+        } else {
+            double taskSimilarity = SimilarUtil.formatSimilarity(paragraphSimilarityCounter / checkParagraphList.size());
+            checkTask.setSimilarity(taskSimilarity);
+        }
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override

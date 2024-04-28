@@ -1,5 +1,7 @@
 package com.eva.check.service.core.impl;
 
+import com.eva.check.common.enums.PaperErrorCode;
+import com.eva.check.common.exception.SystemException;
 import com.eva.check.pojo.CheckRequest;
 import com.eva.check.service.core.DuplicateCheckPrepareService;
 import com.eva.check.service.support.CheckReportService;
@@ -48,6 +50,10 @@ public class RedisCheckTaskExecuteServiceImpl extends BaseCheckTaskExecuteServic
         Long total = total2 == null ? 0L : Long.parseLong(total2.toString());
         if (total == 0) {
             CheckRequest checkRequest = getCheckRequestService().getById(checkId);
+            if (checkRequest == null) {
+                log.warn("异常数据，检测请求为空。可能数据库中数据已经清理，但是MQ中进行了重新投递，checkId:{}", checkId);
+                throw new SystemException(PaperErrorCode.DATA_NOT_EXIST);
+            }
             total = Long.valueOf(checkRequest.getTaskNum());
             initTaskTotal(checkId, total);
             // TODO 目前并发只有一个任务，暂不考虑多任务下增加的原子性问题
