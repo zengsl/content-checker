@@ -138,6 +138,9 @@ public class PaperCollectServiceImpl implements PaperCollectService {
         AtomicLong num = new AtomicLong();
         List<PaperSentence> paperSentenceList = Lists.newArrayListWithCapacity(sentenceList.size());
         List<List<String>> paperSentenceKeywordList = Lists.newArrayListWithCapacity(sentenceList.size());
+
+        List<PaperToken> paperTokenList = Lists.newArrayList();
+        log.info("待处理句子总量：{}", sentenceList.size());
         sentenceList.stream().parallel().forEach(sentence -> {
             // 文本处理 + 分词
             String newSentence = TextUtil.pretreatment(sentence);
@@ -160,13 +163,13 @@ public class PaperCollectServiceImpl implements PaperCollectService {
                     .hash4(sentenceSimHashList.get(3))
                     .build();
 
-            paperSentenceList.add(paperSentence);
+            /*paperSentenceList.add(paperSentence);*/
             paperSentenceKeywordList.add(newKeywordList);
-            /*boolean sentenceSave = paperSentenceService.save(paperSentence);
-            Assert.isTrue(sentenceSave, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));*/
+            /*System.out.println(paperSentenceList.size() + " | " + paperSentenceKeywordList.size());*/
+            boolean sentenceSave = paperSentenceService.save(paperSentence);
+            Assert.isTrue(sentenceSave, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));
+            AtomicLong tokenNum = new AtomicLong();
 
-            /*AtomicLong tokenNum = new AtomicLong();
-            List<PaperToken> paperTokenList = Lists.newArrayList();
             newKeywordList.forEach(keyword -> {
                 // 存关键词信息
                 PaperToken paperToken = PaperToken.builder()
@@ -178,10 +181,11 @@ public class PaperCollectServiceImpl implements PaperCollectService {
                 paperTokenList.add(paperToken);
 
             });
+            /*
             boolean tokenSave = paperTokenService.saveBatch(paperTokenList);
             Assert.isTrue(tokenSave, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));*/
         });
-        AtomicLong tokenNum = new AtomicLong();
+        /*AtomicLong tokenNum = new AtomicLong();
         List<PaperToken> paperTokenList = Lists.newArrayList();
         for (int i = 0, size = paperSentenceKeywordList.size(); i < size; i++) {
             List<String> keywordList = paperSentenceKeywordList.get(i);
@@ -196,9 +200,12 @@ public class PaperCollectServiceImpl implements PaperCollectService {
                         .build();
                 paperTokenList.add(paperToken);
             }
-        }
-        boolean sentenceSave = paperSentenceService.saveBatch(paperSentenceList);
-        Assert.isTrue(sentenceSave, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));
+        }*/
+
+        log.info("待处理分词总量：{}", paperTokenList.size());
+
+       /* boolean sentenceSave = paperSentenceService.saveBatch(paperSentenceList);
+        Assert.isTrue(sentenceSave, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));*/
         boolean tokenSave = paperTokenService.saveBatch(paperTokenList);
         Assert.isTrue(tokenSave, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));
 
