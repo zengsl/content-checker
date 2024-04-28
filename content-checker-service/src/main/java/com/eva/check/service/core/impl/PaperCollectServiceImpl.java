@@ -166,6 +166,10 @@ public class PaperCollectServiceImpl implements PaperCollectService {
             paperSentenceKeywordList.add(newKeywordList);
 
         });
+        // 先存储句子，生成sentenceId，以保证PaperToken可以关联到对应的句子
+        boolean sentenceSave = paperSentenceService.saveBatch(paperSentenceList, ContentCheckConstant.SENTENCE_BATCH_SIZE);
+        Assert.isTrue(sentenceSave, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));
+
         AtomicLong tokenNum = new AtomicLong();
         List<PaperToken> paperTokenList = Lists.newArrayList();
         for (int i = 0, size = paperSentenceKeywordList.size(); i < size; i++) {
@@ -182,8 +186,7 @@ public class PaperCollectServiceImpl implements PaperCollectService {
                 paperTokenList.add(paperToken);
             }
         }
-        boolean sentenceSave = paperSentenceService.saveBatch(paperSentenceList, ContentCheckConstant.SENTENCE_BATCH_SIZE);
-        Assert.isTrue(sentenceSave, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));
+
         boolean tokenSave = paperTokenService.saveBatch(paperTokenList, ContentCheckConstant.SENTENCE_BATCH_SIZE);
         Assert.isTrue(tokenSave, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));
         stopWatch.stop();
