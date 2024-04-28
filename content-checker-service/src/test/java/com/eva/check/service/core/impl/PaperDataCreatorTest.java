@@ -7,11 +7,12 @@ import com.eva.check.service.config.ContentCheckAutoConfiguration;
 import com.eva.check.service.core.PaperCollectService;
 import com.eva.check.service.es.repository.PaperParagraphRepository;
 import com.eva.check.service.support.ImportPaperService;
-import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -40,6 +41,9 @@ public class PaperDataCreatorTest {
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+
+    @Autowired
     private PaperParagraphRepository paperParagraphRepository;
 
     public static final String INIT_DATA_PATH = "initDataWx";
@@ -55,7 +59,7 @@ public class PaperDataCreatorTest {
     void testInitData() throws IOException, URISyntaxException {
         Path directory = Paths.get(Objects.requireNonNull(PaperDataCreatorTest.class.getClassLoader().getResource(INIT_DATA_PATH)).toURI());
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
-            int i =0 ;
+            int i = 0;
             // 测试文件不多，这里就不用多线程了
             for (Path file : stream) {
                 System.out.println(file);
@@ -77,10 +81,10 @@ public class PaperDataCreatorTest {
     }
 
     @Test
-    void testInitMuchData() throws IOException, URISyntaxException{
+    void testInitMuchData() throws IOException, URISyntaxException {
         Path directory = Paths.get(Objects.requireNonNull(PaperDataCreatorTest.class.getClassLoader().getResource("initDataSX")).toURI());
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
-            int i =0 ;
+            int i = 0;
             // 测试文件不多，这里就不用多线程了
             for (Path file : stream) {
                 System.out.println(file);
@@ -106,6 +110,17 @@ public class PaperDataCreatorTest {
         this.testClearBaseData();
         this.testClearCheckData();
         this.testClearEsData();
+//        清空Redis较为危险，可以采用在Redis Client中进行手动处理的方式
+//        this.testClearRedis();
+    }
+
+    @Test
+    void testClearRedis() {
+        this.redisTemplate.execute((RedisCallback<String>) connection -> {
+            connection.serverCommands().flushAll();
+            return null;
+        });
+
     }
 
     @Test
@@ -141,11 +156,11 @@ public class PaperDataCreatorTest {
     }
 
     @Test
-    void testCreateImportData()  throws IOException, URISyntaxException {
+    void testCreateImportData() throws IOException, URISyntaxException {
         Path directory = Paths.get(Objects.requireNonNull(PaperDataCreatorTest.class.getClassLoader().getResource(INIT_DATA_PATH)).toURI());
         List<ImportPaper> importPapers = new ArrayList<>();
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
-            int i =0 ;
+            int i = 0;
             // 测试文件不多，这里就不用多线程了
             for (Path file : stream) {
                 System.out.println(file);
