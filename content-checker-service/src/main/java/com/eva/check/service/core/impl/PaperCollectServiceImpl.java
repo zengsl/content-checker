@@ -63,12 +63,12 @@ public class PaperCollectServiceImpl implements PaperCollectService {
         stopWatch.start("生成指纹");
 
         // 生成指纹
-        SimHashUtil.SimHash simHash = ParagraphUtil.buildFingerprint2(paperInfo.getContent());
+        /*SimHashUtil.SimHash simHash = ParagraphUtil.buildFingerprint2(paperInfo.getContent());
         paperInfo.setHash(simHash.getSimHash());
         paperInfo.setHash1(simHash.getSimHash1());
         paperInfo.setHash2(simHash.getSimHash2());
         paperInfo.setHash3(simHash.getSimHash3());
-        paperInfo.setHash4(simHash.getSimHash4());
+        paperInfo.setHash4(simHash.getSimHash4());*/
 
         stopWatch.stop();
         stopWatch.start("文章、段落存储工作");
@@ -97,11 +97,11 @@ public class PaperCollectServiceImpl implements PaperCollectService {
                 .paragraphNum(1L)
                 .content(paperInfo.getContent())
                 .paperNo(paperInfo.getPaperNo())
-                .hash(simHash.getSimHash())
+              /*  .hash(simHash.getSimHash())
                 .hash1(simHash.getSimHash1())
                 .hash2(simHash.getSimHash2())
                 .hash3(simHash.getSimHash3())
-                .hash4(simHash.getSimHash4())
+                .hash4(simHash.getSimHash4())*/
                 .build();
         paperParagraph.setCreateTime(LocalDateTime.now());
         paperParagraph.setUpdateTime(LocalDateTime.now());
@@ -145,8 +145,8 @@ public class PaperCollectServiceImpl implements PaperCollectService {
             String newSentence = TextUtil.pretreatment(sentence);
             // 分词 + 去除停顿词
             List<String> newKeywordList = TextUtil.segmentAndRemoveStopWord(newSentence);
-            long hash = SimHashUtil.hash(newKeywordList);
-            List<String> sentenceSimHashList = SimHashUtil.splitSimHash(hash);
+           /* long hash = SimHashUtil.hash(newKeywordList);
+            List<String> sentenceSimHashList = SimHashUtil.splitSimHash(hash);*/
 
             // 存句子信息
             PaperSentence paperSentence = PaperSentence.builder()
@@ -155,11 +155,11 @@ public class PaperCollectServiceImpl implements PaperCollectService {
                     .originContent(sentence)
                     .content(newSentence)
                     .wordCount(TextUtil.countWord(sentence))
-                    .hash(hash)
+                    /*.hash(hash)
                     .hash1(sentenceSimHashList.get(0))
                     .hash2(sentenceSimHashList.get(1))
                     .hash3(sentenceSimHashList.get(2))
-                    .hash4(sentenceSimHashList.get(3))
+                    .hash4(sentenceSimHashList.get(3))*/
                     .build();
 
             paperSentenceList.add(paperSentence);

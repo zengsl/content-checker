@@ -44,7 +44,7 @@ public class MemoryPaperSimHashIndexServiceImpl implements PaperSimHashIndexServ
     @Getter
     private final List<Map<String, List<SimilarPaperParagraph>>> paragraphStorage = List.of(new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>());
 
-    @PostConstruct
+    /*@PostConstruct*/
     public void init() {
         this.rebuildAllIndex();
     }
