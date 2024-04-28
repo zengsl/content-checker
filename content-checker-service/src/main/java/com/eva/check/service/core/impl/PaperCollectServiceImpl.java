@@ -4,10 +4,8 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.lang.id.NanoId;
-import com.eva.check.common.enums.DataType;
 import com.eva.check.common.enums.PaperErrorCode;
 import com.eva.check.common.exception.SystemException;
-import com.eva.check.common.util.EnumUtils;
 import com.eva.check.common.util.ParagraphUtil;
 import com.eva.check.common.util.SimHashUtil;
 import com.eva.check.common.util.TextUtil;
@@ -135,9 +133,11 @@ public class PaperCollectServiceImpl implements PaperCollectService {
     }
 
     private void handleSentence(List<String> sentenceList, Long paraId) {
-        AtomicLong num = new AtomicLong();
         StopWatch stopWatch = new StopWatch();
         stopWatch.start("批量处理句子，段落paraId:" + paraId);
+        AtomicLong num = new AtomicLong();
+        List<PaperSentence> paperSentenceList = Lists.newArrayListWithCapacity(sentenceList.size());
+        List<List<String>> paperSentenceKeywordList = Lists.newArrayListWithCapacity(sentenceList.size());
         sentenceList.stream().parallel().forEach(sentence -> {
             // 文本处理 + 分词
             String newSentence = TextUtil.pretreatment(sentence);
@@ -159,15 +159,18 @@ public class PaperCollectServiceImpl implements PaperCollectService {
                     .hash3(sentenceSimHashList.get(2))
                     .hash4(sentenceSimHashList.get(3))
                     .build();
-            boolean save2 = paperSentenceService.save(paperSentence);
-            Assert.isTrue(save2, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));
 
-            AtomicLong num2 = new AtomicLong();
+            paperSentenceList.add(paperSentence);
+            paperSentenceKeywordList.add(newKeywordList);
+            /*boolean sentenceSave = paperSentenceService.save(paperSentence);
+            Assert.isTrue(sentenceSave, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));*/
+
+            /*AtomicLong tokenNum = new AtomicLong();
             List<PaperToken> paperTokenList = Lists.newArrayList();
             newKeywordList.forEach(keyword -> {
                 // 存关键词信息
                 PaperToken paperToken = PaperToken.builder()
-                        .tokenNum(num2.incrementAndGet())
+                        .tokenNum(tokenNum.incrementAndGet())
                         .sentenceId(paperSentence.getSentenceId())
                         .paragraphId(paraId)
                         .content(keyword)
@@ -175,9 +178,31 @@ public class PaperCollectServiceImpl implements PaperCollectService {
                 paperTokenList.add(paperToken);
 
             });
-            boolean save3 = paperTokenService.saveBatch(paperTokenList);
-            Assert.isTrue(save3, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));
+            boolean tokenSave = paperTokenService.saveBatch(paperTokenList);
+            Assert.isTrue(tokenSave, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));*/
         });
+        AtomicLong tokenNum = new AtomicLong();
+        List<PaperToken> paperTokenList = Lists.newArrayList();
+        for (int i = 0, size = paperSentenceKeywordList.size(); i < size; i++) {
+            List<String> keywordList = paperSentenceKeywordList.get(i);
+            PaperSentence paperSentence = paperSentenceList.get(i);
+            for (String keyword : keywordList) {
+                // 存关键词信息
+                PaperToken paperToken = PaperToken.builder()
+                        .tokenNum(tokenNum.incrementAndGet())
+                        .sentenceId(paperSentence.getSentenceId())
+                        .paragraphId(paraId)
+                        .content(keyword)
+                        .build();
+                paperTokenList.add(paperToken);
+            }
+        }
+        boolean sentenceSave = paperSentenceService.saveBatch(paperSentenceList);
+        Assert.isTrue(sentenceSave, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));
+        boolean tokenSave = paperTokenService.saveBatch(paperTokenList);
+        Assert.isTrue(tokenSave, SystemException.withExSupplier(PaperErrorCode.SAVE_FAIL));
+
+
         stopWatch.stop();
         log.info("段落paraId:{} 批量处理句子耗时：{}s", paraId, stopWatch.getTotalTimeSeconds());
     }
