@@ -20,7 +20,7 @@ public class ImportPageJob {
 
     private final ImportPaperService importPaperService;
 
-    @Scheduled(cron = "0 0/1 * * * ? ")
+//    @Scheduled(cron = "0 0/1 * * * ? ")
     public void importPage() {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start("【ImportPageJob#importPage】任务");

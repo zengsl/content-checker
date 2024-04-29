@@ -23,7 +23,7 @@ dependencyResolutionManagement {
         create("libs") {
             version("springBootVersion", '3.1.4')
             version("hutoolVersion", "5.8.27")
-            version("mybatisPlusVersion", "3.5.4")
+            version("mybatisPlusVersion", "3.5.6")
             version("mapStructVersion", "1.5.5.Final")
             version("thymeleafExtraVersion", "3.0.4.RELEASE")
             library('commons-lang3', 'org.apache.commons:commons-lang3:3.13.0')

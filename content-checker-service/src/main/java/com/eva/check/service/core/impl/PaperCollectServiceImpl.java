@@ -60,7 +60,7 @@ public class PaperCollectServiceImpl implements PaperCollectService {
         paperInfo.setWordCount(TextUtil.countWord(paperInfo.getContent()));
 
         stopWatch.stop();
-        stopWatch.start("生成指纹");
+//        stopWatch.start("生成指纹");
 
         // 生成指纹
         /*SimHashUtil.SimHash simHash = ParagraphUtil.buildFingerprint2(paperInfo.getContent());
@@ -70,7 +70,7 @@ public class PaperCollectServiceImpl implements PaperCollectService {
         paperInfo.setHash3(simHash.getSimHash3());
         paperInfo.setHash4(simHash.getSimHash4());*/
 
-        stopWatch.stop();
+//        stopWatch.stop();
         stopWatch.start("文章、段落存储工作");
 
         // 保存论文基本的信息

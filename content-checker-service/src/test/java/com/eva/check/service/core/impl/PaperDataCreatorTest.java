@@ -81,7 +81,7 @@ public class PaperDataCreatorTest {
     }
 
     @Test
-    void testInitMuchData() throws IOException, URISyntaxException {
+    void testInitBigData() throws IOException, URISyntaxException {
         Path directory = Paths.get(Objects.requireNonNull(PaperDataCreatorTest.class.getClassLoader().getResource("initDataSX")).toURI());
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
             int i = 0;
@@ -105,13 +105,19 @@ public class PaperDataCreatorTest {
         }
     }
 
+
+    @Test
+    void testInitMuchData() {
+
+    }
+
     @Test
     void testClearData() {
         this.testClearBaseData();
         this.testClearCheckData();
         this.testClearEsData();
 //        清空Redis较为危险，可以采用在Redis Client中进行手动处理的方式
-//        this.testClearRedis();
+        this.testClearRedis();
     }
 
     @Test
@@ -181,14 +187,5 @@ public class PaperDataCreatorTest {
         importPaperService.saveBatch(importPapers);
     }
 
-    @Test
-    void testResetImportData() {
-        this.jdbcTemplate.execute("update  import_paper t set t.status = '0'");
 
-    }
-
-    @Test
-    void testClearImportData() {
-        this.jdbcTemplate.execute("delete from import_paper");
-    }
 }

@@ -5,6 +5,7 @@ import cn.hutool.core.date.StopWatch;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.eva.check.common.constant.ContentCheckConstant;
 import com.eva.check.common.enums.ImportPageStatus;
 import com.eva.check.mapper.ImportPaperMapper;
 import com.eva.check.pojo.ImportPaper;
@@ -32,8 +33,6 @@ import java.util.List;
 @Slf4j
 public class ImportPaperServiceImpl extends ServiceImpl<ImportPaperMapper, ImportPaper>
         implements ImportPaperService {
-
-    public static final Integer BATCH_SIZE = 10000;
 
     private final PaperCollectService paperCollectService;
 
@@ -70,7 +69,7 @@ public class ImportPaperServiceImpl extends ServiceImpl<ImportPaperMapper, Impor
     @Override
     public List<ImportPaper> loadImportData() {
         // 设置查询的数量
-        Page<ImportPaper> page = new Page<>(1, BATCH_SIZE);
+        Page<ImportPaper> page = new Page<>(1, ContentCheckConstant.IMPORT_BATCH_SIZE);
         LambdaQueryWrapper<ImportPaper> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ImportPaper::getStatus, ImportPageStatus.INIT.getValue());
         // 安装更新时间排序，每次导入之后无论失败与否，都更新更新时间。防止重新补偿推送时总是优先执行那些大概率失败的数据
