@@ -2,6 +2,7 @@ package com.eva.check.service.support;
 
 import cn.hutool.core.lang.id.NanoId;
 import cn.hutool.core.util.RandomUtil;
+import com.eva.check.common.constant.ContentCheckConstant;
 import com.eva.check.pojo.ImportPaper;
 import com.eva.check.pojo.converter.ImportPaperConverter;
 import com.eva.check.pojo.dto.PaperAddReq;
@@ -15,7 +16,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StopWatch;
 
@@ -49,12 +49,25 @@ class ImportPaperServiceTest {
     private TransactionTemplate transactionTemplate;
 
     @Test
-    void importPaper() {
-        this.importPaperService.importPaper();
+    void batchImportPaper() {
+        this.importPaperService.batchImportPaper(1000);
+    }
+
+    @Test
+    void importAllPaper() {
+        this.importPaperService.importAllPaper();
     }
 
     @Test
     void loadImportData() {
+        List<ImportPaper> importPapers = this.importPaperService.loadImportData(ContentCheckConstant.IMPORT_BATCH_SIZE);
+        log.info("importPapers size = {}", importPapers.size());
+    }
+
+    @Test
+    void loadImportDataId() {
+        List<Long> importPaperIds = this.importPaperService.loadImportDataId(ContentCheckConstant.IMPORT_BATCH_SIZE);
+        log.info("importPaperIds size = {}", importPaperIds.size());
     }
 
     @Test
@@ -68,6 +81,9 @@ class ImportPaperServiceTest {
         this.jdbcTemplate.execute("delete from import_paper");
     }
 
+    /**
+     * 像import_paper中生成初始化数据
+     */
     @Test
     void initTestData() throws IOException, URISyntaxException {
         StopWatch stopWatch = new StopWatch("【initTestData】");
@@ -114,7 +130,7 @@ class ImportPaperServiceTest {
             if (importPapers.size() == saveBatchSize) {
                 StopWatch stopWatch2 = new StopWatch("Inner【批量保存数据】");
                 stopWatch2.start();
-                this.transactionTemplate.execute((status)->{
+                this.transactionTemplate.execute((status) -> {
                     try {
                         this.importPaperService.saveBatch(importPapers, saveBatchSize);
                     } catch (Exception e) {
@@ -132,9 +148,9 @@ class ImportPaperServiceTest {
 
 
         if (!importPapers.isEmpty()) {
-            stopWatch.stop();
-            stopWatch.start("【批量保存数据】");
-            this.transactionTemplate.execute((status)->{
+            StopWatch stopWatch3 = new StopWatch("Outer【批量保存数据】");
+            stopWatch3.start("【批量保存数据】");
+            this.transactionTemplate.execute((status) -> {
                 try {
                     this.importPaperService.saveBatch(importPapers, saveBatchSize);
                 } catch (Exception e) {
@@ -144,9 +160,10 @@ class ImportPaperServiceTest {
                 }
                 return null;
             });
+            log.info("【initTestData】最后分批保存  数据总量:{} ，耗时：{}s ，详情：{}", importPapers.size(), stopWatch3.getTotalTimeSeconds(), stopWatch3.prettyPrint());
             importPapers.clear();
-            stopWatch.stop();
         }
+        stopWatch.stop();
 
         log.info("【initTestData】方法执行结束  数据总量:{} ，耗时：{}s ，详情：{}", importPapers.size(), stopWatch.getTotalTimeSeconds(), stopWatch.prettyPrint());
     }

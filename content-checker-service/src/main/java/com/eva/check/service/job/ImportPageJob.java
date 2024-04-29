@@ -4,7 +4,6 @@ import cn.hutool.core.date.StopWatch;
 import com.eva.check.service.support.ImportPaperService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
@@ -25,7 +24,7 @@ public class ImportPageJob {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start("【ImportPageJob#importPage】任务");
         // 执行导入文本操作
-        this.importPaperService.importPaper();
+        this.importPaperService.batchImportPaper(1000);
 
         stopWatch.stop();
         log.info("【ImportPageJob#importPage】任务执行结束   ლ(´ڡ`ლ)ﾞ ，耗时：{}s", stopWatch.getTotalTimeSeconds());

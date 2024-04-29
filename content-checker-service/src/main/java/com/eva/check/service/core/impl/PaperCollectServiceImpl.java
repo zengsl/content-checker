@@ -140,7 +140,7 @@ public class PaperCollectServiceImpl implements PaperCollectService {
         AtomicLong num = new AtomicLong();
         List<PaperSentence> paperSentenceList = Lists.newArrayListWithCapacity(sentenceList.size());
         List<List<String>> paperSentenceKeywordList = Lists.newArrayListWithCapacity(sentenceList.size());
-        sentenceList.stream().parallel().forEach(sentence -> {
+        sentenceList.stream().forEach(sentence -> {
             // 文本处理 + 分词
             String newSentence = TextUtil.pretreatment(sentence);
             // 分词 + 去除停顿词
@@ -164,6 +164,9 @@ public class PaperCollectServiceImpl implements PaperCollectService {
 
             paperSentenceList.add(paperSentence);
             paperSentenceKeywordList.add(newKeywordList);
+            if (paperSentenceKeywordList.size() != paperSentenceList.size()) {
+                throw new RuntimeException("数据对应错了");
+            }
 
         });
         // 先存储句子，生成sentenceId，以保证PaperToken可以关联到对应的句子

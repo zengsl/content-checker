@@ -68,7 +68,7 @@
     </logger>-->
 
     <!--Enable ES transport layer logging-->
-    <logger name="tracer" level="trace"/>
+    <!--<logger name="tracer" level="trace"/>-->
 
 	<root level="info">
 		<appender-ref ref="console" />

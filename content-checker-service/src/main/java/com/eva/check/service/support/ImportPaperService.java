@@ -15,14 +15,30 @@ import java.util.List;
 public interface ImportPaperService extends IService<ImportPaper> {
 
     /**
-     * 导入论文
+     * 批量导入论文
+     *
+     * @param batchSize 批量插入数量
      */
-    void importPaper();
+    void batchImportPaper(int batchSize);
+
+    /**
+     * 导入所有论文
+     */
+    void importAllPaper();
 
     /**
      * 载入待导入论文数据
      *
+     * @param batchSize 查询数量
      * @return List<ImportPaper>
      */
-    List<ImportPaper> loadImportData();
+    List<ImportPaper> loadImportData(int batchSize);
+
+    /**
+     * 载入待导入论文数据Id集合
+     *
+     * @param batchSize 查询数量
+     * @return List<Long>
+     */
+    List<Long> loadImportDataId(int batchSize);
 }
