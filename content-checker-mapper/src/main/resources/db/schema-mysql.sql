@@ -260,3 +260,8 @@ create table if not exists paper_token
 )
     comment '论文分词';
 
+create index paper_token_paragraph_id_index
+    on paper_token (paragraph_id);
+
+create index paper_token_sentence_id_index
+    on paper_token (sentence_id);
