@@ -265,3 +265,7 @@ create index paper_token_paragraph_id_index
 
 create index paper_token_sentence_id_index
     on paper_token (sentence_id);
+
+create index paper_sentence_paragraph_id_index
+    on paper_sentence (paragraph_id);
+
