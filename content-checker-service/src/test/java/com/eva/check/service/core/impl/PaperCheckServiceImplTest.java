@@ -121,6 +121,9 @@ class PaperCheckServiceImplTest {
         this.paperCheckService.createPaperCheck(paperCheckReq);
     }
 
+    /**
+     * 新增检查并且收录当前文章
+     */
     @Test
     void createPaperCheckAndCollect() {
         String document = "客户关系管理（Customer Relationship Managemen-CRM）是指企业运用营销、关怀等手段时刻保持商业银行与实际客户和潜在客户交互的动作，客户关系管理是在企业发展过程中的一个产物，也是企业保持竞争力的重要方面。";

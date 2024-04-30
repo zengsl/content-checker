@@ -48,13 +48,21 @@ public class PaperDataCreatorTest {
 
     public static final String INIT_DATA_PATH = "initDataWx";
 
-
+    /**
+     * 清空所有的文章库数据、检测数据（paper_xxx、check_xxx）
+     */
     @Test
     void reset() throws IOException, URISyntaxException {
         testClearData();
         testInitData();
     }
 
+    /**
+     * 将某个目录下的文章数据导入到数据库中，执行文章收录功能，创建文章库。生成paper_xxx相关表
+     *
+     * @author zengsl
+     * @date 2024/4/30 17:51
+     */
     @Test
     void testInitData() throws IOException, URISyntaxException {
         Path directory = Paths.get(Objects.requireNonNull(PaperDataCreatorTest.class.getClassLoader().getResource(INIT_DATA_PATH)).toURI());
@@ -80,6 +88,12 @@ public class PaperDataCreatorTest {
         }
     }
 
+    /**
+     * 收录数据量比较大的文章，字数2w+
+     *
+     * @author zengsl
+     * @date 2024/4/30 17:52
+     */
     @Test
     void testInitBigData() throws IOException, URISyntaxException {
         Path directory = Paths.get(Objects.requireNonNull(PaperDataCreatorTest.class.getClassLoader().getResource("initDataSX")).toURI());
@@ -161,6 +175,12 @@ public class PaperDataCreatorTest {
         /*this.rocketMQTemplate.getProducer().*/
     }
 
+    /**
+     * 生成导入数据。 系统支持线下将需要录入至检测系统的文章库的数据，以数据表的方式进行批量录入。通过将数据导入至import_paper表中，再由ImportPaperServiceTest内或者ImportPaperService的导入方法执行批量文章录入功能（生成paper_xxx相关表）
+     *
+     * @author zengsl
+     * @date 2024/4/30 17:53
+     */
     @Test
     void testCreateImportData() throws IOException, URISyntaxException {
         Path directory = Paths.get(Objects.requireNonNull(PaperDataCreatorTest.class.getClassLoader().getResource(INIT_DATA_PATH)).toURI());
