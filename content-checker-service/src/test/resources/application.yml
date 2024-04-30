@@ -10,8 +10,12 @@ spring:
     username: "elastic"
     password: "gwO+DhAFKGhJmIcI3798"
 
+
 content-check:
-  mq: rocketMq
+  mq: eventBus
+  process-log: true
+#  mq: rocketMq
+#  mq: eventBus
 
 
 # rabbitmq 特殊配置

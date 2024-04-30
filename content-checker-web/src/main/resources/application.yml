@@ -37,7 +37,7 @@ server:
     register-default-servlet: true
 
 content-check:
-  mq: rocketMq
+  mq: eventBus
   process-log: true
 #  mq: rocketMq
 #  mq: eventBus
