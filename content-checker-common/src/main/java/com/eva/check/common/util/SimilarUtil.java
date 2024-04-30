@@ -49,7 +49,20 @@ public class SimilarUtil {
      * @return 词频统计信息
      */
     public static Map<String, Float> countWordFrequency(String sentence) {
-        List<String> tokenList = TextUtil.cleanAndSegment(sentence);
+       return countWordFrequency(sentence, false);
+    }
+
+    /**
+     * 统计词频
+     *
+     * @param sentence 句子
+     * @return 词频统计信息
+     */
+    public static Map<String, Float> countWordFrequency(String sentence, boolean pretreatment) {
+        if (pretreatment) {
+            sentence = TextUtil.pretreatment(sentence);
+        }
+        List<String> tokenList = TextUtil.segmentAndRemoveStopWord(sentence);
         if (CollectionUtil.isEmpty(tokenList)) {
             return null;
         }

@@ -22,6 +22,24 @@ public class PaperSentenceServiceImpl extends ServiceImpl<PaperSentenceMapper, P
     implements PaperSentenceService {
 
     @Transactional(readOnly = true)
+    @Cacheable(value = CacheConstant.SENTENCE_CACHE_KEY, key = "#sentenceId")
+    @Override
+    public PaperSentence getByIdFromCache(Long sentenceId) {
+        return this.getById(sentenceId);
+    }
+
+    @Transactional(readOnly = true)
+    @Cacheable(value = CacheConstant.PARAGRAPH_SENTENCE_ID_CACHE_KEY, key = "#paragraphId")
+    @Override
+    public List<Long> getSentenceIdFromCache(Long paragraphId) {
+        // 先使用Spring 内存缓存
+        LambdaQueryWrapper<PaperSentence> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(PaperSentence::getParagraphId, paragraphId);
+        queryWrapper.select(PaperSentence::getSentenceId);
+        return this.getBaseMapper().selectObjs(queryWrapper);
+    }
+
+    @Transactional(readOnly = true)
     @Cacheable(value = CacheConstant.PARAGRAPH_SENTENCE_CACHE_KEY, key = "#paragraphId")
     @Override
     public List<PaperSentence> getByParagraphIdFromCache(Long paragraphId) {

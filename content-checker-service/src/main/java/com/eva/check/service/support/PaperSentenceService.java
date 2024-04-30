@@ -14,5 +14,7 @@ import java.util.List;
 public interface PaperSentenceService extends IService<PaperSentence> {
 
     List<PaperSentence> getByParagraphIdFromCache(Long paragraphId);
+    List<Long> getSentenceIdFromCache(Long paragraphId);
+    PaperSentence getByIdFromCache(Long sentenceId);
 
 }

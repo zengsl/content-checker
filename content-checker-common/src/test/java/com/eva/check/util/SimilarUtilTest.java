@@ -191,5 +191,43 @@ class SimilarUtilTest {
 
     }
 
+    /**
+     * 当对某句子对相似度结果计算有疑问时，可以测试某对句子相似度的计算结果：
+     * 1、根据checkNo查找数据的SQL
+     * <p>
+     * select *
+     * from check_task t where t.check_no = 'fY65qSJTM7tI2Qbuz2yLo';
+     * <p>
+     * select *
+     * from check_paragraph t where t.paper_id = 285;
+     * <p>
+     * select t.sentence_id, t.*
+     * from check_sentence t where t.paragraph_id = 511;
+     * <p>
+     * select *
+     * from check_sentence_pair t where t.check_sentence_id = 16543;
+     * <p>
+     * select t.content
+     * from paper_sentence t where t.sentence_id = 5565024;
+     * select t.content
+     * from check_sentence t where t.sentence_id = 16543;
+     * <p>
+     * 2、 将找到的句子作为doc1和doc2
+     *
+     * @author zengsl
+     * @date 2024/4/30 16:59
+     */
+    @Test
+    void testSimilarity() {
+        // 根据doc注释查找对应的句子内容
+        String doc1 = "加速研究进度,早日产出研究成果,为推动高质量发展注入新动能";
+        String doc2 = "基于相关研究成果";
+        List<String> keywordList1 = TextUtil.segmentAndRemoveStopWord(doc1);
+        List<String> keywordList2 = TextUtil.segmentAndRemoveStopWord(doc2);
+        Map<String, Float> frequency1 = SimilarUtil.countWordFrequency(keywordList1);
+        Map<String, Float> frequency2 = SimilarUtil.countWordFrequency(keywordList2);
+        double cosineSimilarity = SimilarUtil.getCosineSimilarity(frequency1, frequency2);
+        System.out.println("cosineSimilarity:" + cosineSimilarity);
+    }
 
 }

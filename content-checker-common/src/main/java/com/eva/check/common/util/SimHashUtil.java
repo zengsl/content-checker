@@ -10,7 +10,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import static com.eva.check.common.util.SimilarUtil.countWordFrequency;
 
 /**
  * <a href="https://www.cs.princeton.edu/courses/archive/spr04/cos598B/bib/CharikarEstim.pdf">SimHash算法介绍</a>
@@ -75,7 +74,7 @@ public class SimHashUtil {
      */
     public static long hash(Collection<String> segList) {
         // 计算词频
-        Map<String, Float> charSequenceIntegerMap = countWordFrequency(segList);
+        Map<String, Float> charSequenceIntegerMap = SimilarUtil.countWordFrequency(segList);
         return extracted(charSequenceIntegerMap, segList);
     }
 

@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StopWatch;
 
 import java.util.List;
 import java.util.Map;
@@ -68,6 +69,7 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
     /**
      * 快速查找疑似项目，生成待比对数据对
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void findSimilarParagraph(CheckTask checkTask) {
         if (!DataType.FULL_TEXT.getValue().equals(checkTask.getCheckType())) {
@@ -144,13 +146,18 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
     /**
      * 以段落为单元，执行检测
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void doPragraphCheck(CheckTask checkTask) {
+        StopWatch stopWatch = new StopWatch("doPragraphCheck");
+        stopWatch.start("查询CheckParagraphPair");
         Map<Long, CheckPaperResult> checkPaperResultMap = Maps.newHashMap();
         // TODO 这里的校验可以用多线程进行
         List<CheckParagraphPair> checkParagraphPairList = this.checkParagraphPairService.getByTaskId(checkTask.getTaskId());
+        stopWatch.stop();
+        stopWatch.start("遍历checkParagraphPairList");
         // 遍历每一对需要比较的段落
-        checkParagraphPairList.stream().parallel().forEach(checkParagraphPair -> {
+        checkParagraphPairList.forEach(checkParagraphPair -> {
             // 获取待检测的段落包含的句子
             List<CheckSentence> checkSentenceList = this.checkSentenceService.getByParagraphId(checkParagraphPair.getCheckParaId());
             if (CollUtil.isEmpty(checkSentenceList)) {
@@ -160,20 +167,20 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
                 return;
             }
             List<CheckSentencePair> checkSentencePairList = Lists.newArrayListWithCapacity(16);
-            List<PaperSentence> paperSentenceList = this.paperSentenceService.getByParagraphIdFromCache(checkParagraphPair.getTargetParaId());
+            List<Long> paperSentenceList = this.paperSentenceService.getSentenceIdFromCache(checkParagraphPair.getTargetParaId());
             // 相似度累加器
             AtomicDouble similarityCounter = new AtomicDouble();
             // 待检测句子按照每一句进行处理
-            checkSentenceList.stream().parallel().forEach(checkSentence -> {
+            checkSentenceList.forEach(checkSentence -> {
                 // 计算词频  获取待检测句子的所有关键词词频
                 Map<String, Float> checkSentenceWordFrequency = SimilarUtil.countWordFrequency(checkSentence.getContent());
                 if (CollUtil.isEmpty(checkSentenceWordFrequency)) {
                     log.info("当前【检测句】没有找到对应的分词,不进行比对,checkSentenceId: {}", checkSentence.getSentenceId());
                     return;
                 }
-                paperSentenceList.stream().parallel().forEach(targetPaperSentence -> {
+                paperSentenceList.forEach(targetPaperSentenceId -> {
                     // 获取并计算当前需要比对的句子词频
-                    Map<String, Float> paperSentenceWordFrequency = this.paperTokenService.getWordFrequencyFromCache(targetPaperSentence.getSentenceId());
+                    Map<String, Float> paperSentenceWordFrequency = this.paperTokenService.getWordFrequencyFromCache(targetPaperSentenceId);
                     // 计算相似度
                     double cosineSimilarity = SimilarUtil.getCosineSimilarity(checkSentenceWordFrequency, paperSentenceWordFrequency);
                     // 计算出的相似度是否大于等于阈值；相似度小于阈值，不进行相似度计算，但是需要保留比对的结果
@@ -189,7 +196,7 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
                             .checkParaId(checkParagraphPair.getCheckParaId())
                             .targetParaId(checkParagraphPair.getTargetParaId())
                             .checkSentenceId(checkSentence.getSentenceId())
-                            .targetSentenceId(targetPaperSentence.getSentenceId())
+                            .targetSentenceId(targetPaperSentenceId)
                             .similarity(cosineSimilarity)
                             .status(CheckSentencePairStatus.DONE.getValue())
                             .build();
@@ -213,11 +220,19 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
 
         });
 
+        stopWatch.stop();
+        stopWatch.start("汇总paper_pair的结果");
 
         // 汇总paper_pair的结果
         saveCheckPaperResult(checkTask.getPaperId(), checkTask.getTaskId(), checkPaperResultMap);
+        stopWatch.stop();
+        stopWatch.start("存储汇总paper_pair的结果");
         // 汇总段落检测对的结果
         this.checkParagraphPairService.updateBatchById(checkParagraphPairList);
+        stopWatch.stop();
+        log.info("【doPragraphCheck】方法执行结束, checkTaskId:{} ，耗时：{}s ，详情：{}", checkTask.getTaskId(), stopWatch.getTotalTimeSeconds(), stopWatch.prettyPrint());
+
+
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
@@ -250,6 +265,7 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
                 , SimilarUtil.formatSimilarity(paperSimilarityCounter.get() / checkPaperResultMap.size()));
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void collectResult(CheckTask checkTask) {
 
@@ -268,7 +284,7 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
             }
             AtomicDouble sentenceSimilarityCounter = new AtomicDouble();
             // 遍历检测句子
-            checkSentenceList.stream().parallel().forEach(checkSentence -> {
+            checkSentenceList.forEach(checkSentence -> {
                 // 查找每个句子的检测对（当前句子与疑似句子）
                 List<CheckSentencePair> checkSentencePairList = this.checkSentencePairService.getAllByCheckSentenceId(checkSentence.getSentenceId());
                 if (CollUtil.isEmpty(checkSentencePairList)) {

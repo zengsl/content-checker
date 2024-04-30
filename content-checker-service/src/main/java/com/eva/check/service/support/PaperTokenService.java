@@ -20,6 +20,7 @@ public interface PaperTokenService extends IService<PaperToken> {
     List<PaperToken> getPaperTokenBySentenceIdFromCache(Long sentenceId);
     List<String> getTokenBySentenceIdFromCache(Long sentenceId);
     List<String> getTokenBySentenceId(Long sentenceId);
+    List<String> computeTokenBySentenceId(Long sentenceId);
     Map<String, Float> getWordFrequencyFromCache(Long sentenceId);
 
 }

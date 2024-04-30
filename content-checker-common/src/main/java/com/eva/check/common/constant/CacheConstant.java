@@ -12,6 +12,7 @@ public interface CacheConstant {
     String CACHE_PREFIX = "CC";
 
     String PARAGRAPH_SENTENCE_CACHE_KEY = CACHE_PREFIX + ":para_sentence";
+    String PARAGRAPH_SENTENCE_ID_CACHE_KEY = CACHE_PREFIX + ":para_sentence_id";
     String PARAGRAPH_TOKEN_CACHE_KEY = CACHE_PREFIX + ":para_token";
     String SENTENCE_TOKEN_CACHE_KEY = CACHE_PREFIX + ":sentence_paper_token";
     String SENTENCE_CACHE_KEY = CACHE_PREFIX + ":sentence";

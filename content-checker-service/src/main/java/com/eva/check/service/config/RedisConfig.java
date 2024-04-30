@@ -94,9 +94,11 @@ public class RedisConfig implements CachingConfigurer {
         // 设定失效时间
         // 比对库内的数据缓存可以设置的时间长一些
         initialCacheConfiguration.put(CacheConstant.PARAGRAPH_SENTENCE_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(30)));
+        initialCacheConfiguration.put(CacheConstant.PARAGRAPH_SENTENCE_ID_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(30)));
         initialCacheConfiguration.put(CacheConstant.SENTENCE_TOKEN_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(30)));
         initialCacheConfiguration.put(CacheConstant.SENTENCE_PAPER_TOKEN_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(30)));
         initialCacheConfiguration.put(CacheConstant.SENTENCE_TOKEN_WORD_FREQ_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(30)));
+        initialCacheConfiguration.put(CacheConstant.SENTENCE_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(30)));
         initialCacheConfiguration.put(CacheConstant.PARAGRAPH_TOKEN_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(30)));
 //        initialCacheConfiguration.put(CacheConstant.REPORT_CONTENT_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(5)));
         initialCacheConfiguration.put(CacheConstant.REPORT_CONTENT_DTO_CACHE_KEY, getDefaultSimpleConfiguration(classLoader).entryTtl(Duration.ofDays(7)));
