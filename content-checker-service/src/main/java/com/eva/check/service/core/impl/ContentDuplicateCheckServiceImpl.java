@@ -102,7 +102,7 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
                 log.info("未找到相似论文, paperId:{} paraId:{}", paperParagraph.getPaperId(), paperParagraph.getParagraphId());
                 return;
             }
-
+            log.info(" 找到相似论文{}份", similarPaperList.size());
             similarPaperList.forEach(e -> {
                 CheckParagraphPair list = CheckParagraphPair.builder()
                         .taskId(checkTask.getTaskId())

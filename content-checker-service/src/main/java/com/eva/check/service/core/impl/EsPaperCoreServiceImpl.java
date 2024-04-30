@@ -6,6 +6,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.MoreLikeThisQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+import co.elastic.clients.elasticsearch.core.search.SourceFilter;
 import co.elastic.clients.elasticsearch.core.search.TotalHits;
 import com.eva.check.pojo.PaperParagraph;
 import com.eva.check.pojo.dto.SimilarPaperParagraph;
@@ -47,7 +48,7 @@ public class EsPaperCoreServiceImpl implements PaperCoreService {
     public List<SimilarPaperParagraph> findSimilarPaperParagraph(PaperParagraph paperParagraph) {
 
         //  pageAfter分页,当前的pageSize只是做一个安全防御。按照目前的一般的业务场景来说，不会超过该阈值。
-        int pageSize = 5000;
+        int pageSize = 3;
         Query paperNoQuery = MatchQuery.of(m -> m
                 .field("paperNo")
                 .query(StringUtils.hasText(paperParagraph.getPaperNo()) ? paperParagraph.getPaperNo() : "-11")
@@ -64,7 +65,7 @@ public class EsPaperCoreServiceImpl implements PaperCoreService {
         )._toQuery();
         SearchResponse<PaperParagraphDoc> response = null;
         try {
-           /* SearchRequest searchRequest = new SearchRequest.Builder().index("paper-paragraph")
+            /*SearchRequest searchRequest = new SearchRequest.Builder().index("paper-paragraph")
                     .query(q -> q
                             .bool(b -> b
                                     .mustNot(paperNoQuery)
@@ -79,11 +80,16 @@ public class EsPaperCoreServiceImpl implements PaperCoreService {
                                             .mustNot(paperNoQuery)
                                             .must(moreLikeThisQuery)
                                     )
-                            ).size(pageSize),
+                            )
+                            .size(pageSize)
+/*
+                            .source(builder -> builder.filter(SourceFilter.of(sf -> sf.excludes("content"))))
+*/
+                    ,
                     PaperParagraphDoc.class
             );
         } catch (Exception e) {
-            log.error("", e);
+            log.error("调用ES查找疑似文章失败", e);
         }
         if (response == null) {
             return null;
@@ -93,8 +99,9 @@ public class EsPaperCoreServiceImpl implements PaperCoreService {
         assert total != null;
         long totalDataCount = total.value();
         long tempPageNo = totalDataCount % pageSize == 0L ? totalDataCount / pageSize : (totalDataCount / pageSize) + 1L;
-        log.info("paperParagraphId:{} 总数量={},总页数={}", paperParagraph.getParagraphId(), totalDataCount, tempPageNo);
+        log.info("paperParagraphId:{} 总数量={}, 总页数={}", paperParagraph.getParagraphId(), totalDataCount, tempPageNo);
         List<Hit<PaperParagraphDoc>> hits = response.hits().hits();
+        log.info(" 总共匹配数量:{}", hits.size());
         /*for (Hit<PaperParagraphDoc> hit : hits) {
             PaperParagraphDoc source = hit.source();
             log.info("Found product " + source);

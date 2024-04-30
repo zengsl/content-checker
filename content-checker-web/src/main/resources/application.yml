@@ -12,12 +12,12 @@ spring:
     username: "elastic"
     password: "gwO+DhAFKGhJmIcI3798"
   thymeleaf:
-    cache: false
+    cache: true
   data:
     redis:
       host: 127.0.0.1
       port: 6379
-      #password: jxncredis
+      #password: xxx
       database: 1
 
 

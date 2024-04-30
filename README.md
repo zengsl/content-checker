@@ -57,6 +57,17 @@ PUT paper-paragraph
 }
 ```
 
+
+查询方法
+
+- Http Request
+
+```http request
+GET /paper-paragraph/_search
+```
+
+- Idea Elasticsearch Plugin
+
 ### Run the web server
 
 run the main method in `com.eva.check.web.ContentCheckerWebApplication`
