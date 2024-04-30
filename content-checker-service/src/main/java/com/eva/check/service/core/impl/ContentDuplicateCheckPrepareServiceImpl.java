@@ -61,7 +61,7 @@ public class ContentDuplicateCheckPrepareServiceImpl implements DuplicateCheckPr
             return;
         }
         // 生成检测文本的指纹信息
-        SimHashUtil.SimHash simHash = ParagraphUtil.buildFingerprint2(checkTask.getContent());
+        /*SimHashUtil.SimHash simHash = ParagraphUtil.buildFingerprint2(checkTask.getContent());*/
         // 生成句子
         List<String> sentenceList = TextUtil.smartSplitSentence(checkTask.getContent());
         // 生成检测段落
@@ -74,11 +74,11 @@ public class ContentDuplicateCheckPrepareServiceImpl implements DuplicateCheckPr
                 .checkId(checkTask.getCheckId())
                 .taskId(checkTask.getTaskId())
                 .content(checkTask.getContent())
-                .hash(simHash.getSimHash())
+                /*.hash(simHash.getSimHash())
                 .hash1(simHash.getSimHash1())
                 .hash2(simHash.getSimHash2())
                 .hash3(simHash.getSimHash3())
-                .hash4(simHash.getSimHash4())
+                .hash4(simHash.getSimHash4())*/
                 .build();
         this.checkParagraphService.save(checkParagraph);
 
