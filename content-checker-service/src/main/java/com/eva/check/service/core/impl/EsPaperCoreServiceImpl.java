@@ -6,7 +6,6 @@ import co.elastic.clients.elasticsearch._types.query_dsl.MoreLikeThisQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
-import co.elastic.clients.elasticsearch.core.search.SourceFilter;
 import co.elastic.clients.elasticsearch.core.search.TotalHits;
 import com.eva.check.pojo.PaperParagraph;
 import com.eva.check.pojo.dto.SimilarPaperParagraph;
@@ -53,13 +52,26 @@ public class EsPaperCoreServiceImpl implements PaperCoreService {
                 .field("paperNo")
                 .query(StringUtils.hasText(paperParagraph.getPaperNo()) ? paperParagraph.getPaperNo() : "-11")
         )._toQuery();
-
+        // https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-mlt-query.html#query-dsl-mlt-query
         Query moreLikeThisQuery = MoreLikeThisQuery.of(m -> m
                 .like(builder -> builder.text(paperParagraph.getContent()))
                 .fields("content")
+                // 用于分析自由格式文本的分析器。默认为与字段中的第一个字段关联的分析器。
                 .analyzer("ik_smart")
+                // 输入文档中将忽略术语的最小文档频率。默认值为 5。
                 .minDocFreq(2)
+                // 输入文档中将忽略术语的最大文档频率。这对于忽略频繁使用的单词（如停用词）可能很有用。默认为无界 （Integer.MAX_VALUE，即 2^31-1 或 2147483647）。
+                .maxDocFreq(1000)
+                // 输入文档中将忽略术语的最小术语频率。默认值为 2。
                 .minTermFreq(1)
+                // 将选择的最大查询词数。增加此值可提高准确性，但会降低查询执行速度。默认值为 25。
+                .maxQueryTerms(25)
+                // 字词将被忽略的最小字长。默认值为 0。
+                .minWordLength(2)
+                //停用词数组。此集合中的任何单词都被视为“无趣”并被忽略。如果分析器允许使用停用词，您可能希望告诉 MLT 显式忽略它们，因为出于文档相似性的目的，假设“停用词从来都不有趣”似乎是合理的。
+                // 是否直接在ES中设置好？
+                .stopWords(null)
+                // 形成析取查询后，此参数控制必须匹配的术语数。语法与最小值应匹配的语法相同。（默认为“30%”）。
                 .minimumShouldMatch(checkProperties.getContentSimilarityThreshold())
                 .boost(1F)
         )._toQuery();
