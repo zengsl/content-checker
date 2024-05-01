@@ -47,7 +47,8 @@ public class EsPaperCoreServiceImpl implements PaperCoreService {
     public List<SimilarPaperParagraph> findSimilarPaperParagraph(PaperParagraph paperParagraph) {
 
         //  pageAfter分页,当前的pageSize只是做一个安全防御。按照目前的一般的业务场景来说，不会超过该阈值。
-        int pageSize = 3;
+        // 这里设置为30，一般真实的业务场景下，重复的30篇文章也算是比较夸张了。即使由更多的重复文章，也没有比较更多数据的必要了，所以这里设置为30。
+        int pageSize = 30;
         Query paperNoQuery = MatchQuery.of(m -> m
                 .field("paperNo")
                 .query(StringUtils.hasText(paperParagraph.getPaperNo()) ? paperParagraph.getPaperNo() : "-11")
@@ -63,7 +64,7 @@ public class EsPaperCoreServiceImpl implements PaperCoreService {
                 // 输入文档中将忽略术语的最大文档频率。这对于忽略频繁使用的单词（如停用词）可能很有用。默认为无界 （Integer.MAX_VALUE，即 2^31-1 或 2147483647）。
                 .maxDocFreq(1000)
                 // 输入文档中将忽略术语的最小术语频率。默认值为 2。
-                .minTermFreq(1)
+                .minTermFreq(2)
                 // 将选择的最大查询词数。增加此值可提高准确性，但会降低查询执行速度。默认值为 25。
                 .maxQueryTerms(25)
                 // 字词将被忽略的最小字长。默认值为 0。
@@ -73,6 +74,7 @@ public class EsPaperCoreServiceImpl implements PaperCoreService {
                 .stopWords(null)
                 // 形成析取查询后，此参数控制必须匹配的术语数。语法与最小值应匹配的语法相同。（默认为“30%”）。
                 .minimumShouldMatch(checkProperties.getContentSimilarityThreshold())
+                // 设置整个查询的提升值。默认值为 1.0。
                 .boost(1F)
         )._toQuery();
         SearchResponse<PaperParagraphDoc> response = null;

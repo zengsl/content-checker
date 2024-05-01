@@ -87,6 +87,13 @@ You can batch add paper library with  `ImportPaperServiceTest` or web page
 - PaperDataCreatorTest#testCreateImportData() 配合 ImportPaperServiceTest
   ImportPaperServiceTest#initTestData()可批量造数据，批量造数据默认创建8w条，可以调整下数量。
 
+
+### 调整
+
+- EsPaperCoreServiceImpl#findSimilarPaperParagraph中`moreLikeThisQuery`相关参数、分词器、停用词需根据具体数据进行调整。
+- TextUtil中分词需针对数据特性进行调整，停用词补充。
+
+
 ## TODO
 
 - [ ] 分词优化
