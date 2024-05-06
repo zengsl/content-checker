@@ -7,7 +7,6 @@ import com.eva.check.pojo.ImportPaper;
 import com.eva.check.pojo.converter.ImportPaperConverter;
 import com.eva.check.pojo.dto.PaperAddReq;
 import com.eva.check.service.config.ContentCheckAutoConfiguration;
-import com.eva.check.service.core.PaperCollectService;
 import com.eva.check.service.core.impl.PaperDataCreatorTest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -39,8 +38,6 @@ class ImportPaperServiceTest {
     @Autowired
     private ImportPaperService importPaperService;
 
-    @Autowired
-    private PaperCollectService paperCollectService;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -82,7 +79,11 @@ class ImportPaperServiceTest {
     }
 
     /**
-     * 像import_paper中生成初始化数据
+     * 向import_paper中生成初始化数据：
+     * <p>
+     * 以某文章内容为基础，随机做一些内容修改，生成一定数量的数据。
+     * <p>
+     * 内容修改：每条数据将随机进行多次处理，每次处理内容将随机设置为替换或者删除。
      */
     @Test
     void initTestData() throws IOException, URISyntaxException {

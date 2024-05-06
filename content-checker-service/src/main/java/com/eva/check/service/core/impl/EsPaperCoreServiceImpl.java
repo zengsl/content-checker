@@ -47,7 +47,7 @@ public class EsPaperCoreServiceImpl implements PaperCoreService {
     public List<SimilarPaperParagraph> findSimilarPaperParagraph(PaperParagraph paperParagraph) {
 
         //  pageAfter分页,当前的pageSize只是做一个安全防御。按照目前的一般的业务场景来说，不会超过该阈值。
-        // 这里设置为30，一般真实的业务场景下，重复的30篇文章也算是比较夸张了。即使由更多的重复文章，也没有比较更多数据的必要了，所以这里设置为30。
+        // 这里设置为30，一般真实的业务场景下，重复的30篇文章也算是比较夸张了。即使由更多的重复文章，也没有比较更多数据的必要了，所以这里设置为30。可以根据实际情况调整成10、5等各种参数。
         int pageSize = 30;
         Query paperNoQuery = MatchQuery.of(m -> m
                 .field("paperNo")

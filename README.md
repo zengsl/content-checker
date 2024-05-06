@@ -2,6 +2,9 @@
 
 A study project of simple content checker for paper.
 
+- Included text library
+- Detection requests
+
 ## Usage
 
 You can use this project to check the similarity of the content of the paper.
