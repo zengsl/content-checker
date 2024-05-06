@@ -71,7 +71,7 @@ public class EsPaperCoreServiceImpl implements PaperCoreService {
                 .minWordLength(2)
                 //停用词数组。此集合中的任何单词都被视为“无趣”并被忽略。如果分析器允许使用停用词，您可能希望告诉 MLT 显式忽略它们，因为出于文档相似性的目的，假设“停用词从来都不有趣”似乎是合理的。
                 // 是否直接在ES中设置好？
-                .stopWords(null)
+//                .stopWords(null)
                 // 形成析取查询后，此参数控制必须匹配的术语数。语法与最小值应匹配的语法相同。（默认为“30%”）。
                 .minimumShouldMatch(checkProperties.getContentSimilarityThreshold())
                 // 设置整个查询的提升值。默认值为 1.0。
