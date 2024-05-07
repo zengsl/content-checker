@@ -58,15 +58,17 @@ public class EsPaperCoreServiceImpl implements PaperCoreService {
                 .like(builder -> builder.text(paperParagraph.getContent()))
                 .fields("content")
                 // 用于分析自由格式文本的分析器。默认为与字段中的第一个字段关联的分析器。
-                .analyzer("ik_smart")
+                .analyzer("my_analyzer")
                 // 输入文档中将忽略术语的最小文档频率。默认值为 5。
-                .minDocFreq(2)
+                .minDocFreq(1)
                 // 输入文档中将忽略术语的最大文档频率。这对于忽略频繁使用的单词（如停用词）可能很有用。默认为无界 （Integer.MAX_VALUE，即 2^31-1 或 2147483647）。
-                .maxDocFreq(1000)
+                // 类似IDF，当一个词语出现频率很高，那么就其比较的重要性就会降低。
+                .maxDocFreq(100)
                 // 输入文档中将忽略术语的最小术语频率。默认值为 2。
                 .minTermFreq(2)
                 // 将选择的最大查询词数。增加此值可提高准确性，但会降低查询执行速度。默认值为 25。
-                .maxQueryTerms(25)
+                // Elasticsearch BM25 模型评分 https://mp.weixin.qq.com/s?__biz=MzI2NDY1MTA3OQ==&amp;mid=2247486763&amp;idx=1&amp;sn=1302223a96f9f7f1daeab93b5e587d02&amp;chksm=eaa82503dddfac15ebaf5d0f84f521e5b4c320d49b72bb49c7d9ba9f2ce138fdb08a10038fc9&amp;scene=21&poc_token=HAuSOGajpYRE7J5YFylRmCRrBad7K2IIoHeBXRo4
+                .maxQueryTerms(15)
                 // 字词将被忽略的最小字长。默认值为 0。
                 .minWordLength(2)
                 //停用词数组。此集合中的任何单词都被视为“无趣”并被忽略。如果分析器允许使用停用词，您可能希望告诉 MLT 显式忽略它们，因为出于文档相似性的目的，假设“停用词从来都不有趣”似乎是合理的。
@@ -79,14 +81,6 @@ public class EsPaperCoreServiceImpl implements PaperCoreService {
         )._toQuery();
         SearchResponse<PaperParagraphDoc> response = null;
         try {
-            /*SearchRequest searchRequest = new SearchRequest.Builder().index("paper-paragraph")
-                    .query(q -> q
-                            .bool(b -> b
-                                    .mustNot(paperNoQuery)
-                                    .must(moreLikeThisQuery)
-                            )
-                    ).size(pageSize)
-                    .build();*/
             response = esClient.search(s -> s
                             .index("paper-paragraph")
                             .query(q -> q
