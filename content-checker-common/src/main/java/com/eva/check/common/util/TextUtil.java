@@ -249,6 +249,10 @@ public class TextUtil {
         return Files.readString(filePath);
     }
 
+    public static String getDocument(String filePath) throws IOException, URISyntaxException {
+        return Files.readString(Paths.get(Objects.requireNonNull(TextUtil.class.getClassLoader().getResource(filePath)).toURI()));
+    }
+
     public static Map<String, Float> extractKeyword(String text, int size) {
         List<Term> termList = HanLP.segment(text);
         return topKeyword(termList, size);

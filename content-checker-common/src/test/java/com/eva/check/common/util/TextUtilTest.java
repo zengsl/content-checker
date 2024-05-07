@@ -6,6 +6,7 @@ import com.hankcs.hanlp.model.perceptron.PerceptronLexicalAnalyzer;
 import com.hankcs.hanlp.seg.common.Term;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -129,6 +130,17 @@ class TextUtilTest {
         System.out.println("defaultMap: " + defaultMap);
         System.out.println("lexicalMap: " + lexicalMap);
         System.out.println("crfMap: " + crfMap);
+
+    }
+
+    @Test
+    void testSeg2() throws IOException, URISyntaxException {
+        String document = TextUtil.getDocument("data" + File.separator + "sxBigData.txt");
+        String document2 = TextUtil.getCheckDocument( "data0.txt");
+        List<String> extractKeyword = HanLP.extractKeyword(document, 10);
+        List<String> extractKeyword2 = HanLP.extractKeyword(document2, 10);
+        System.out.println("extractKeyword:" + extractKeyword);
+        System.out.println("extractKeyword2:" + extractKeyword2);
 
     }
 }
