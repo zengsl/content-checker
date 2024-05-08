@@ -10,4 +10,6 @@ public interface PaperCoreService {
     void collectParagraph(PaperParagraph paperParagraph);
 
     List<SimilarPaperParagraph> findSimilarPaperParagraph(PaperParagraph paperParagraph);
+
+    List<SimilarPaperParagraph> findSimilarPaperParagraph2(PaperParagraph paperParagraph);
 }

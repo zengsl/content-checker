@@ -97,7 +97,7 @@ public class ContentDuplicateCheckServiceImpl implements DuplicateCheckService {
                     .hash4(checkParagraph.getHash4())
                     .build();
             // 快速判断是否重复，获取重复论文列表
-            List<SimilarPaperParagraph> similarPaperList = this.paperCoreService.findSimilarPaperParagraph(paperParagraph);
+            List<SimilarPaperParagraph> similarPaperList = this.paperCoreService.findSimilarPaperParagraph2(paperParagraph);
             // 目前SimHash这种方法无法快速查找的可能相似的文档
             // List<SimilarPaperParagraph> similarPaperList = this.paperSimHashIndexService.findSimilarPaper(paperParagraph);
             if (CollUtil.isEmpty(similarPaperList)) {

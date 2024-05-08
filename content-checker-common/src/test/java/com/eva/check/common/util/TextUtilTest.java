@@ -143,4 +143,46 @@ class TextUtilTest {
         System.out.println("extractKeyword2:" + extractKeyword2);
 
     }
+
+    @Test
+    void testSeg3() throws IOException, URISyntaxException {
+        String document = TextUtil.getDocument("data" + File.separator + "sxBigData.txt");
+
+        List<String> extractKeyword = HanLP.extractKeyword(document, 30);
+        List<String> extractKeyword2 = HanLP.extractKeyword(document, 20);
+        List<String> extractKeyword3 = HanLP.extractKeyword(document, 15);
+        List<String> extractKeyword4 = HanLP.extractKeyword(document, 10);
+        List<String> extractKeyword5 = HanLP.extractKeyword(document, 5);
+        System.out.println("extractKeyword:" + extractKeyword);
+        System.out.println("extractKeyword:" +  TextUtil.cleanAndExtractKeyword(document, 30));
+        System.out.println("extractKeyword2:" + extractKeyword2);
+        System.out.println("extractKeyword2:" +  TextUtil.cleanAndExtractKeyword(document, 20));
+        System.out.println("extractKeyword3:" + extractKeyword3);
+        System.out.println("extractKeyword3:" + TextUtil.cleanAndExtractKeyword(document, 15));
+        System.out.println("extractKeyword4:" + extractKeyword4);
+        System.out.println("extractKeyword4:" + TextUtil.cleanAndExtractKeyword(document, 10));
+        System.out.println("extractKeyword5:" + extractKeyword5);
+        System.out.println("extractKeyword5:" + TextUtil.cleanAndExtractKeyword(document, 5));
+    }
+
+    @Test
+    void testSeg4() throws IOException, URISyntaxException {
+        String document = TextUtil.getCheckDocument( "data0.txt");
+
+        List<String> extractKeyword = HanLP.extractKeyword(document, 30);
+        List<String> extractKeyword2 = HanLP.extractKeyword(document, 20);
+        List<String> extractKeyword3 = HanLP.extractKeyword(document, 15);
+        List<String> extractKeyword4 = HanLP.extractKeyword(document, 10);
+        List<String> extractKeyword5 = HanLP.extractKeyword(document, 5);
+        System.out.println("extractKeyword:" + extractKeyword);
+        System.out.println("extractKeyword:" +  TextUtil.cleanAndExtractKeyword(document, 30));
+        System.out.println("extractKeyword2:" + extractKeyword2);
+        System.out.println("extractKeyword2:" +  TextUtil.cleanAndExtractKeyword(document, 20));
+        System.out.println("extractKeyword3:" + extractKeyword3);
+        System.out.println("extractKeyword3:" + TextUtil.cleanAndExtractKeyword(document, 15));
+        System.out.println("extractKeyword4:" + extractKeyword4);
+        System.out.println("extractKeyword4:" + TextUtil.cleanAndExtractKeyword(document, 10));
+        System.out.println("extractKeyword4:" + extractKeyword4);
+        System.out.println("extractKeyword4:" + TextUtil.cleanAndExtractKeyword(document, 5));
+    }
 }

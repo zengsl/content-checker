@@ -207,8 +207,18 @@ public class TextUtil {
      * @return 经过预处理后文本的分词结果
      */
     public static List<String> pretreatmentAndExtractKeyword(String text) {
+        return pretreatmentAndExtractKeyword(text, text.length());
+    }
+
+    /**
+     * 分词
+     *
+     * @param text 待处理的文本
+     * @return 经过预处理后文本的分词结果
+     */
+    public static List<String> pretreatmentAndExtractKeyword(String text, int keywordCount) {
         String newSentence = pretreatment(text);
-        return HanLP.extractKeyword(newSentence, newSentence.length());
+        return HanLP.extractKeyword(newSentence, keywordCount);
     }
 
     public static List<String> pretreatmentAndSegment(String text) {
@@ -229,8 +239,13 @@ public class TextUtil {
     }
 
     public static List<String> cleanAndExtractKeyword(String text) {
+        return cleanAndExtractKeyword(text, text.length());
+    }
+
+    public static List<String> cleanAndExtractKeyword(String text, int keywordCount) {
         // 文本处理 + 分词
-        List<String> keywordList = pretreatmentAndExtractKeyword(text);
+        List<String> keywordList = pretreatmentAndExtractKeyword(text, keywordCount);
+//        System.out.println("extractKeyword:"+keywordList);
         // 去除停顿词
         return keywordList.stream().filter(k -> k.length() > 1).filter(StopWordRemover::isNotStopWord).toList();
     }
