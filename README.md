@@ -58,8 +58,10 @@ PUT paper-paragraph
       "analyzer": {
         "my_analyzer": {
           "tokenizer": "ik_smart",
-           "filter":["my_stop","my-length-filter"]
-
+           "filter":["lowercase","my_stop","my-length-filter"],
+           "char_filter": [
+               "html_strip"
+             ]
         }
       }
     }
