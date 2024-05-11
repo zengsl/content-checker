@@ -23,7 +23,14 @@ public interface ImportPaperConverter {
 
     @Mapping(target = "createTime", ignore = true)
     @Mapping(target = "updateTime", ignore = true)
+    @Mapping(target = "paperExtList", ignore = true)
+    @Mapping(target = "dataType", ignore = true)
+    @Mapping(target = "dataSource", ignore = true)
     PaperAddReq toAddReq(ImportPaper importPaper);
+
+    @Mapping(target = "importId", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "msg", ignore = true)
     ImportPaper toImportReq(PaperAddReq paperAddReq);
 
 }

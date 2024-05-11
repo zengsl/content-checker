@@ -174,16 +174,22 @@ public class ContentCheckAutoConfiguration extends ElasticsearchConfiguration {
         if (uris == null) {
             throw new RuntimeException("需要配置spring.elasticsearch相关信息");
         }
+        boolean isSsl = true;
         if (uris.get(0).startsWith("http://")) {
             url = uris.get(0).replace("http://", "");
+            isSsl = false;
         } else if (uris.get(0).startsWith("https://")) {
             url = uris.get(0).replace("https://", "");
         }
-        return ClientConfiguration.builder()
-                .connectedTo(url)
-                .usingSsl()
-                .withBasicAuth(elasticsearchProperties.getUsername(), elasticsearchProperties.getPassword())
-                .build();
+        ClientConfiguration.MaybeSecureClientConfigurationBuilder maybeSecureClientConfigurationBuilder = ClientConfiguration.builder()
+                .connectedTo(url);
+        if (isSsl) {
+            maybeSecureClientConfigurationBuilder.usingSsl();
+        }
+        ClientConfiguration.TerminalClientConfigurationBuilder builder = maybeSecureClientConfigurationBuilder
+                .withBasicAuth(elasticsearchProperties.getUsername(), elasticsearchProperties.getPassword());
+
+        return builder.build();
     }
 
 

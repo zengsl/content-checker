@@ -8,7 +8,7 @@ spring:
     uris: "https://localhost:9200"
     socket-timeout: "10s"
     username: "elastic"
-    password: "gwO+DhAFKGhJmIcI3798"
+    password: "b=zI1++1St_T63DbE0dG"
 
 
 content-check:
