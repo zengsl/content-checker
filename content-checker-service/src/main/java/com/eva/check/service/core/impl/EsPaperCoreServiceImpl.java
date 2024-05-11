@@ -72,7 +72,7 @@ public class EsPaperCoreServiceImpl implements PaperCoreService {
                         // 类似IDF，当一个词语出现频率很高，那么就其比较的重要性就会降低。
                         .maxDocFreq(100)
                         // 输入文档中将忽略术语的最小术语频率。默认值为 2。
-                        .minTermFreq(2)
+                        .minTermFreq(1)
                         // 将选择的最大查询词数。增加此值可提高准确性，但会降低查询执行速度。默认值为 25。
                         // Elasticsearch BM25 模型评分 https://mp.weixin.qq.com/s?__biz=MzI2NDY1MTA3OQ==&amp;mid=2247486763&amp;idx=1&amp;sn=1302223a96f9f7f1daeab93b5e587d02&amp;chksm=eaa82503dddfac15ebaf5d0f84f521e5b4c320d49b72bb49c7d9ba9f2ce138fdb08a10038fc9&amp;scene=21&poc_token=HAuSOGajpYRE7J5YFylRmCRrBad7K2IIoHeBXRo4
                         .maxQueryTerms(15)
