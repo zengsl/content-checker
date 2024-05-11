@@ -130,7 +130,7 @@ POST paper-paragraph/_search
       "analyzer": "my_analyzer",
       "min_doc_freq": 1,
       "max_doc_freq": 100,
-      "min_term_freq": 2,
+      "min_term_freq": 1,
       "minimum_should_match":"40%",
       "min_word_length":"2",
       "max_query_terms":"15",
