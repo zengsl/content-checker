@@ -12,8 +12,9 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.hamcrest.CoreMatchers.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 
 class TextUtilTest {
@@ -136,7 +137,7 @@ class TextUtilTest {
     @Test
     void testSeg2() throws IOException, URISyntaxException {
         String document = TextUtil.getDocument("data" + File.separator + "sxBigData.txt");
-        String document2 = TextUtil.getCheckDocument( "data0.txt");
+        String document2 = TextUtil.getCheckDocument("data0.txt");
         List<String> extractKeyword = HanLP.extractKeyword(document, 10);
         List<String> extractKeyword2 = HanLP.extractKeyword(document2, 10);
         System.out.println("extractKeyword:" + extractKeyword);
@@ -154,9 +155,9 @@ class TextUtilTest {
         List<String> extractKeyword4 = HanLP.extractKeyword(document, 10);
         List<String> extractKeyword5 = HanLP.extractKeyword(document, 5);
         System.out.println("extractKeyword:" + extractKeyword);
-        System.out.println("extractKeyword:" +  TextUtil.cleanAndExtractKeyword(document, 30));
+        System.out.println("extractKeyword:" + TextUtil.cleanAndExtractKeyword(document, 30));
         System.out.println("extractKeyword2:" + extractKeyword2);
-        System.out.println("extractKeyword2:" +  TextUtil.cleanAndExtractKeyword(document, 20));
+        System.out.println("extractKeyword2:" + TextUtil.cleanAndExtractKeyword(document, 20));
         System.out.println("extractKeyword3:" + extractKeyword3);
         System.out.println("extractKeyword3:" + TextUtil.cleanAndExtractKeyword(document, 15));
         System.out.println("extractKeyword4:" + extractKeyword4);
@@ -167,7 +168,7 @@ class TextUtilTest {
 
     @Test
     void testSeg4() throws IOException, URISyntaxException {
-        String document = TextUtil.getCheckDocument( "data0.txt");
+        String document = TextUtil.getCheckDocument("data0.txt");
 
         List<String> extractKeyword = HanLP.extractKeyword(document, 30);
         List<String> extractKeyword2 = HanLP.extractKeyword(document, 20);
@@ -175,14 +176,24 @@ class TextUtilTest {
         List<String> extractKeyword4 = HanLP.extractKeyword(document, 10);
         List<String> extractKeyword5 = HanLP.extractKeyword(document, 5);
         System.out.println("extractKeyword:" + extractKeyword);
-        System.out.println("extractKeyword:" +  TextUtil.cleanAndExtractKeyword(document, 30));
+        System.out.println("extractKeyword:" + TextUtil.cleanAndExtractKeyword(document, 30));
         System.out.println("extractKeyword2:" + extractKeyword2);
-        System.out.println("extractKeyword2:" +  TextUtil.cleanAndExtractKeyword(document, 20));
+        System.out.println("extractKeyword2:" + TextUtil.cleanAndExtractKeyword(document, 20));
         System.out.println("extractKeyword3:" + extractKeyword3);
         System.out.println("extractKeyword3:" + TextUtil.cleanAndExtractKeyword(document, 15));
         System.out.println("extractKeyword4:" + extractKeyword4);
         System.out.println("extractKeyword4:" + TextUtil.cleanAndExtractKeyword(document, 10));
         System.out.println("extractKeyword4:" + extractKeyword4);
         System.out.println("extractKeyword4:" + TextUtil.cleanAndExtractKeyword(document, 5));
+    }
+
+    @Test
+    void testSmartSplitSentence() {
+        List<String> strings = TextUtil.smartSplitSentence("你好，我是李四。我是李四。我是李四。我是李四。我是李四。我是李四。我是李四。我是李四。我是李四。我是李四。我是李四。我是李四。我是");
+        System.out.println("strings：" + strings);
+        List<String> strings2 = TextUtil.smartSplitSentence("你好。我是。李四。我是。");
+        List<String> except2 = List.of("你好。我是。李四。我是。");
+        System.out.println("strings2：" + strings2);
+        assertEquals(strings2, except2);
     }
 }

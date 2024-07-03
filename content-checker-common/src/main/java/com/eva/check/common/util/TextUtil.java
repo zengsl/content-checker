@@ -105,22 +105,32 @@ public class TextUtil {
         StringBuilder waitSentence = new StringBuilder();
         for (int i = 0; i < splitSentences.length; i++) {
             String sentence = splitSentences[i];
+            int length = sentence.trim().length();
             // 满足最小长度则直接添加
-            if (sentence.trim().length() >= MIN_SENTENCE_LENGTH) {
+            if (length >= MIN_SENTENCE_LENGTH) {
                 if (waitSentence.isEmpty()) {
                     finalSentences.add(sentence);
                 } else {
+//        可以针对长度进行判断，避免合并过长的句子        if(waitSentence.length() >= MIN_SENTENCE_LENGTH/2 )
                     waitSentence.append(sentence);
                     finalSentences.add(waitSentence.toString());
                     waitSentence.setLength(0);
                 }
             } else {
-                // 若当前是最后一句，则拼接到上一句后面
+                waitSentence.append(sentence);
+                // 若当前是最后一句，则拼接到上一句后面。 ps:也可以增加更复杂的判断，如：上一句很长的话 就不拼接到上一句中。
                 if (i == (splitSentences.length - 1)) {
-                    int lastIndex = finalSentences.size() - 1;
-                    finalSentences.set(lastIndex, finalSentences.get(lastIndex) + sentence);
+                    if (finalSentences.isEmpty()) {
+                        finalSentences.add(waitSentence.toString());
+                    } else {
+                        int lastIndex = finalSentences.size() - 1;
+                        finalSentences.set(lastIndex, finalSentences.get(lastIndex) + waitSentence);
+                    }
                 } else {
-                    waitSentence.append(sentence);
+                    if (waitSentence.length() >= MIN_SENTENCE_LENGTH) {
+                        finalSentences.add(waitSentence.toString());
+                        waitSentence.setLength(0);
+                    }
                 }
             }
         }
