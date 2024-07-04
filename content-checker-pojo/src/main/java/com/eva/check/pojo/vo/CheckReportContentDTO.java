@@ -3,8 +3,10 @@ package com.eva.check.pojo.vo;
 import com.eva.check.pojo.CheckRequest;
 import com.eva.check.pojo.CheckTask;
 import com.eva.check.pojo.dto.SentenceResult;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -17,6 +19,8 @@ import java.util.Map;
  */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CheckReportContentDTO implements Serializable {
 
     @Serial
